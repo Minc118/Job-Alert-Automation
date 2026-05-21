@@ -4,14 +4,15 @@ ENV PYTHONDONTWRITEBYTECODE=1 \
     PYTHONUNBUFFERED=1 \
     PIP_NO_CACHE_DIR=1
 
-WORKDIR /app
+WORKDIR /app/backend
 
-COPY pyproject.toml README.md .gitignore ./
-COPY job_alert_automation ./job_alert_automation
-COPY api ./api
-COPY config ./config
-COPY migrations ./migrations
-COPY tests ./tests
+COPY README.md .gitignore /app/
+COPY backend/pyproject.toml backend/README.md ./
+COPY backend/job_alert_automation ./job_alert_automation
+COPY backend/api ./api
+COPY backend/config ./config
+COPY backend/migrations ./migrations
+COPY backend/tests ./tests
 
 RUN python -m pip install --upgrade pip \
     && python -m pip install -e ".[dev]" \

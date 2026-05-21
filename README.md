@@ -1,24 +1,24 @@
 # Job Alert Automation
 
-Backend-only, local/manual Python CLI foundation for collecting job alert candidates.
+Backend CLI and dashboard foundation for collecting job alert candidates from job alert emails.
 
-Phase 1 creates the safe project foundation: package structure, config loading, typed models, Neon PostgreSQL connection helpers, manual SQL migrations, dedupe helpers, tests, and setup documentation.
+The project started as a local/manual CLI. It now also contains a FastAPI dashboard boundary and a React dashboard foundation while the next auth-backed multi-user web app phases are staged explicitly.
 
 ## What Phase 1 Includes
 
 - Manual CLI entrypoint with `--help`, `--dry-run`, `--run-now`, `--check-db`, and `--migrate`
 - Two configured users: `minjian` and `chang`
-- Non-secret user preferences in `config/users.yaml`
+- Non-secret user preferences in `backend/config/users.yaml`
 - Secret-safe `.env` loading for `DATABASE_URL`
-- Manual migration runner for SQL files in `migrations/`
+- Manual migration runner for SQL files in `backend/migrations/`
 - Initial PostgreSQL schema for users, preferences, ingestion runs, emails, jobs, and user-job state
 - URL/text normalization and in-memory job dedupe helpers
 - Unit tests that do not require a real database
 
-## Deferred To Phase 2
+## Historical Phase 1 Deferrals
 
 - LinkedIn, StepStone, and Indeed parsing
-- Dashboard frontend
+- Dashboard frontend work that now exists in the later frontend phases
 
 Phase 2A adds readonly Gmail OAuth and metadata fetching only. It still does not parse jobs, write Gmail changes, generate digests, or write ingestion data to the database.
 
@@ -26,7 +26,28 @@ Phase 2B adds parser and rule-filtering foundations in code and tests. It can pa
 
 Phase 2C adds real readonly dry-run previews. Phase 2D adds Neon persistence, batch-aware discovery tracking, and manual Codex analysis request/import files.
 
-There is no UI, no scheduler, no cron, no GitHub Actions, no OpenAI API, no Gemini API, and no LLM provider abstraction in v1.
+There is no scheduler, cron, GitHub Actions, browser-side AI call, or frontend-to-Neon connection in the current checkpoint.
+
+## Web App Direction
+
+UI-PUBLIC1 adds public frontend routing while keeping auth mock-only:
+
+```text
+/              Public landing page
+/login         Google-only login page
+/onboarding    Mock setup flow
+/app/*         Mock-gated dashboard routes
+/demo/*        Public mock-only dashboard preview
+```
+
+Google login and Gmail OAuth are separate:
+
+- Future Google login identifies the app user.
+- Gmail readonly authorization is a separate connection step for job alert email reading.
+
+The preferred auth direction is Neon Auth with Google OAuth if it is feasible. AUTH0 keeps the frontend auth boundary mock-only and documents the future identity/session direction in `docs/auth0-auth-architecture.md`. Email/password registration, password reset, real Google login, backend session validation, multi-user Gmail OAuth, and Gemini runtime analysis are not implemented in AUTH0.
+
+Gemini is the future backend-only automated analysis direction. Manual Codex request/import remains the fallback. Browser code must never receive `GEMINI_API_KEY`, `DATABASE_URL`, Gmail OAuth tokens, or private document files.
 
 ## Setup
 
@@ -40,7 +61,9 @@ source .venv/bin/activate
 Install dependencies:
 
 ```bash
+cd backend
 python -m pip install -e ".[dev]"
+cd ..
 ```
 
 Create a local `.env` file:
@@ -54,8 +77,21 @@ Put your Neon PostgreSQL connection string in `.env` as `DATABASE_URL`. Do not c
 ## Test
 
 ```bash
+cd backend
 python -m pytest
 ```
+
+## Frontend
+
+Run the public landing, mock onboarding, demo dashboard, and dashboard routes locally:
+
+```bash
+cd frontend
+npm install
+npm run dev
+```
+
+Use `/demo` for mock-only public preview data. `/app/*` currently uses a versioned mock auth session held in browser `sessionStorage`; it does not implement a real Google or Neon Auth session yet.
 
 ## Local Dashboard API
 
@@ -64,6 +100,7 @@ Phase F2 adds a read-only FastAPI layer for the dashboard. The frontend must use
 Run the API locally:
 
 ```bash
+cd backend
 uvicorn api.app:app --reload --host 127.0.0.1 --port 8000
 ```
 
@@ -161,9 +198,10 @@ Docker security notes:
 
 ## CLI Commands
 
-Show help:
+Run local CLI commands from `backend/` after activating the repository virtual environment. Show help:
 
 ```bash
+cd backend
 python -m job_alert_automation.main --help
 ```
 
@@ -268,7 +306,7 @@ python -m pytest tests/test_email_parser.py tests/test_filters.py
 
 ## Codex Analysis Workflow
 
-Codex analysis is manual. The CLI and future dashboard do not call OpenAI API, Gemini API, or any AI API.
+Codex analysis is the current manual fallback. Preparing and importing Codex files does not call OpenAI API, Gemini API, Codex API, or any AI API.
 
 Status and discovery are separate:
 
@@ -278,8 +316,8 @@ Status and discovery are separate:
 Private profile files are local only and gitignored:
 
 ```text
-private/profile_minjian.md
-private/profile_chang.md
+private/profiles/profile_minjian.md
+private/profiles/profile_chang.md
 ```
 
 Suggested private profile template:
@@ -304,7 +342,7 @@ Suggested private profile template:
 ## Notes for Codex Analysis
 ```
 
-If a profile file is missing, analysis request generation still works and falls back to non-secret preferences from `config/users.yaml`.
+If a profile file is missing, analysis request generation still works and falls back to non-secret preferences from `backend/config/users.yaml`.
 
 Prepare an analysis request after jobs have been ingested:
 
@@ -366,11 +404,12 @@ curl -X POST http://127.0.0.1:8000/api/analysis-import \
 
 The dashboard import button uses this local API endpoint in real mode. The API only reads JSON files inside `output/analysis_results`.
 
-Codex analysis consumes Codex usage in the separate Codex session. This project does not use OpenAI/Gemini API tokens.
+Codex analysis consumes Codex usage in the separate Codex session. Future automated Gemini analysis will be backend-only and staged separately.
 
 ## Secrets
 
 - `.env` is ignored by git.
 - Everything inside `secrets/` is ignored except `secrets/.gitkeep`.
 - Everything inside `output/` is ignored except `output/.gitkeep`.
-- Do not commit database URLs, Gmail OAuth client secrets, Gmail tokens, passwords, or generated outputs.
+- Everything inside `private/` stays local except the tracked placeholder files required by the repo.
+- Do not commit database URLs, Gemini keys, Gmail OAuth client secrets, Gmail tokens, passwords, private documents, or generated outputs.

@@ -1,21 +1,45 @@
 # Frontend Structure
 
+## Route Groups
+
+Public routes:
+
+- `/`: `PublicLandingPage`
+- `/login`: `LoginPage`
+- `/demo/*`: mock-only `DashboardApp`
+
+Mock-gated app routes:
+
+- `/onboarding`: `OnboardingFlow`
+- `/app`: redirect to `/app/overview`
+- `/app/overview`: dashboard overview
+- `/app/jobs`: jobs workspace
+- `/app/settings`: settings workspace
+
+AUTH0 uses `AuthProvider`, `AuthGate`, and versioned `sessionStorage` mock auth/onboarding state. Real authentication and backend session validation are deferred.
+
 ## Pages
 
+- `PublicLandingPage`: landing hero, product preview, how-it-works, privacy, demo CTA.
+- `LoginPage`: Google-only mock sign-in entry.
+- `OnboardingFlow`: mock welcome, preferences, Gmail connection, profile/resume, finish steps.
 - `OverviewPage`: metrics, latest run summary, source summary, top recommendations, recent activity.
-- `JobsPage`: status tabs, filters, job table, action buttons, right-side job detail drawer.
-- `SettingsPage`: preferences, Profile & Resume mock UI, data sources, system notes.
+- `JobsPage`: status tabs, filters, job table, analysis actions, right-side job detail drawer.
+- `SettingsPage`: preferences, Gmail Connection panel, profile/resume documents, data sources, system notes.
 
 ## Shared Layout
 
-- `AppShell`: desktop sidebar, topbar, mobile bottom nav, main content region.
-- `Sidebar`: Overview, Jobs, Settings, Run Fetch action.
-- `Topbar`: refresh action, latest-run indicator, user selector.
-- `MainContent`: page canvas with desktop/mobile responsive padding.
-- `MobileTopbar`: compact page title and profile icon.
-- `MobileBottomNav`: Overview/Jobs/Settings navigation.
-- `RightSideDrawer`: used by job details.
-- `Modal`: shared modal primitive.
+- Router root in `App`
+- `DashboardApp` for `/app/*` and `/demo/*`
+- `AuthProvider` and `useAuth` seam for the current mock session model and future auth providers
+- `AuthGate`
+- `AppShell`
+- `Sidebar`
+- `Topbar`
+- Mobile topbar and bottom navigation
+- Drawer and modal primitives
+
+Demo mode must always select mock clients and data. App mode may use configured mock or real API clients.
 
 ## Shared Components
 
@@ -33,8 +57,8 @@
 - `DiscoveryBadge`
 - `PriorityBadge`
 - `FilterBar`
-- `ActionButton`
 - `SettingsSection`
+- `GmailConnectionPanel`
 - `ProfileResumeSection`
 - `PrivateProfileFileStatus`
 - `DataSourceStatusCard`
@@ -44,7 +68,7 @@
 
 ## Data Models
 
-The F1 frontend defines TypeScript models:
+Frontend models include:
 
 - `User`
 - `Job`
@@ -54,22 +78,23 @@ The F1 frontend defines TypeScript models:
 - `UserDocument`
 - `DataSourceStatus`
 
+AUTH0 auth models include safe mock session state and onboarding progress. Future auth-backed models add backend session identity, Gmail connection state, and Gemini analysis batch metadata without exposing secrets.
+
 ## Backend Data Requirements
 
-The future API must provide:
+The backend boundary must provide:
 
-- Overview counters by user and selected range.
-- Latest ingestion run summary.
-- Source summary.
-- Jobs with status, discovery, rule matches, and latest Codex analysis.
-- User preferences.
-- Document metadata for private profiles and resumes.
-- Action endpoints for status updates and manual Codex prepare/import workflows.
+- Overview counters and latest run summaries.
+- Jobs with status, discovery, rule matches, latest analysis, and link metadata.
+- User preferences and source summaries.
+- Backend-mediated document metadata and actions.
+- Status and manual Codex prepare/import actions already staged.
+- Later auth, Gmail connection, and backend-only Gemini actions.
 
 ## UX Corrections
 
-- Keep status and discovery as separate table columns/badges.
-- Avoid language implying browser-side AI calls.
-- Keep upload controls disabled/mock-only in F1.
-- Use Berlin, Potsdam, Remote, Hybrid Berlin, and Hybrid Potsdam examples.
-- Keep dashboard density close to the Stitch table/card layout.
+- Keep status and discovery separate in table and copy.
+- Do not imply browser-side Neon, Gmail token, or Gemini access.
+- Distinguish Google login from Gmail readonly connection.
+- Keep demo data public and mock-only.
+- Keep Berlin, Potsdam, Remote, Hybrid Berlin, and Hybrid Potsdam examples.

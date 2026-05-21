@@ -1,5 +1,6 @@
 import type { DataSourceStatus, User, UserDocument, UserPreferences } from "../types";
 import DataSourceStatusCard from "../components/DataSourceStatusCard";
+import GmailConnectionPanel from "../components/GmailConnectionPanel";
 import ProfileResumeSection from "../components/ProfileResumeSection";
 import SettingsSection from "../components/SettingsSection";
 import SystemNotesCard from "../components/SystemNotesCard";
@@ -51,6 +52,8 @@ export default function SettingsPage({
             </div>
           </div>
         </SettingsSection>
+
+        <GmailConnectionPanel />
 
         <ProfileResumeSection documents={documents} />
 

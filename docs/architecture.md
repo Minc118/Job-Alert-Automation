@@ -1,92 +1,134 @@
 # Job Alert Automation Architecture
 
-## System Overview
+## Current Checkpoint
 
-Job Alert Automation is a local/manual system for collecting job alert emails, storing parsed jobs in Neon PostgreSQL, preparing manual Codex analysis requests, and displaying results in a local dashboard.
+The repository currently contains:
 
-The intended flow is:
+- A Python CLI for Gmail readonly fetch, parsing, dedupe, ingestion batches, and manual Codex analysis files.
+- A FastAPI backend layer for dashboard reads plus staged status and manual analysis workflows.
+- A React/Vite dashboard with mock and local API modes.
+- A profile/resume frontend and document architecture foundation that still needs auth-scoped hardening later.
+- Local Docker support for backend CLI/API and frontend development.
+
+UI-PUBLIC1 adds public frontend routing and mock auth/onboarding structure. AUTH0 refines that structure into a documented auth boundary and a replaceable frontend auth seam. It does not add real authentication, backend sessions, Gemini runtime calls, or multi-user Gmail OAuth.
+
+## Target System
+
+The product is evolving from a local personal tool into a small multi-user web app:
 
 ```text
-Gmail readonly alerts
-  -> Backend CLI
-  -> Neon PostgreSQL
-  -> Future local backend API
+Public Landing / Login
+  -> Google app authentication
+  -> Onboarding
   -> React dashboard
+  -> Local or deployed FastAPI backend
+  -> Neon PostgreSQL
 ```
 
-The frontend must never connect directly to Neon and must never receive `DATABASE_URL`, Gmail OAuth files, private profile files, resume PDFs, or API keys.
+The dashboard must never connect directly to Neon. Browser code must never receive `DATABASE_URL`, Gmail OAuth client secrets, Gmail tokens, Gemini keys, private profile files, or resume PDFs.
+
+## Frontend Flows
+
+Public routes are:
+
+- `/` for the landing page.
+- `/login` for Google-only login copy.
+- `/demo/*` for mock-only dashboard preview data.
+
+Authenticated target routes are:
+
+- `/onboarding`
+- `/app/overview`
+- `/app/jobs`
+- `/app/settings`
+
+AUTH0 keeps mock auth and onboarding state in `sessionStorage` through a frontend `AuthProvider` seam. It stores browser-session mock state only and persists onboarding progress so route behavior can be exercised without real Neon Auth. Real session handling is deferred to AUTH1-AUTH3.
+
+## Authentication And Gmail
+
+Google login and Gmail OAuth are separate flows.
+
+- Google login identifies the app user.
+- Gmail OAuth grants readonly access to job alert emails after the user chooses to connect Gmail.
+- Gmail UI copy must not imply that login alone grants mailbox access.
+- Gmail readonly access must not send, delete, archive, or mark email as read.
+
+Preferred authentication direction is Neon Auth with Google OAuth if it proves suitable. The project does not add email/password registration, password reset, password hashes, or a custom password login system in this direction.
+
+The detailed AUTH0 boundary, identity mapping direction, and `/api/me` staging are documented in [`docs/auth0-auth-architecture.md`](auth0-auth-architecture.md).
 
 ## Backend CLI Responsibilities
+
+The CLI remains useful for local/manual workflows:
 
 - Gmail readonly fetching.
 - LinkedIn, StepStone, and Indeed alert parsing.
 - Rule-based filtering and deduplication.
-- Neon persistence via local `DATABASE_URL`.
+- Neon persistence through local `DATABASE_URL`.
 - Ingestion run and batch tracking.
-- Codex analysis request generation as local Markdown/JSON files.
-- Codex structured JSON analysis import.
+- Manual Codex request generation and JSON result import.
 
-The CLI does not call OpenAI, Gemini, Codex, or any AI API.
+## Backend API Responsibilities
 
-## Future Local API Responsibilities
+FastAPI is the dashboard boundary. Current API work keeps frontend data access behind safe JSON endpoints. Staged future API work adds:
 
-The future API will read Neon and return safe JSON to the dashboard.
+- Session/user identity via `/api/me`.
+- Auth-scoped preferences.
+- User-job status actions.
+- Gmail connection/fetch status.
+- Gemini analysis orchestration.
+- Analysis batch reads and manual Codex fallback.
+- Auth-scoped document metadata and file operations.
 
-Planned API responsibilities:
+The API may load private files on the backend where authorized. It must not expose private filesystem paths as direct browser-readable URLs.
 
-- Read overview metrics, jobs, ingestion runs, analysis data, users, and document metadata.
-- Update `user_jobs.status`.
-- Trigger preparation of Codex analysis request files.
-- Import Codex analysis result JSON files.
-- Manage local document metadata and upload/activation workflows.
+## Dashboard Responsibilities
 
-The API must not expose secrets or private files as browser-readable URLs.
+The dashboard keeps one central jobs workspace:
 
-## Frontend Responsibilities
+- Overview metrics, latest run summary, recent activity, and top recommendations.
+- Jobs table, filters, detail drawer, status actions, analysis output, and application prompt copy.
+- Settings for preferences, documents, data sources, and Gmail connection state.
 
-The React/Vite dashboard is initially a static mock. Later it will consume the local API only.
-
-Frontend responsibilities:
-
-- Display overview metrics and latest run summary.
-- Display jobs with separate status and discovery filters.
-- Display rule-based relevance and latest Codex analysis.
-- Support local mock status changes in F1.
-- Show mock Profile & Resume settings.
-- Present prepare/import analysis actions as manual workflows.
-
-The frontend must not connect to Neon directly and must not call any AI API.
+The frontend talks only to backend clients. Demo mode must use mock data even when real API mode is configured.
 
 ## Neon Responsibilities
 
-Neon PostgreSQL stores persistent metadata:
+Neon stores persistent app data and metadata:
 
-- Users and preferences.
-- Email message metadata.
-- Canonical jobs.
-- User-job status and rule-match state.
-- Ingestion runs.
-- Job occurrences per run.
-- Analysis batches.
-- Codex job analyses.
+- `app_users`
+- `user_preferences`
+- `ingestion_runs`
+- `email_messages`
+- `jobs`
+- `user_jobs`
+- `job_run_occurrences`
+- `analysis_batches`
+- `codex_job_analyses`
+- `user_documents`
 
-Neon stores document metadata and local paths only. It must not store resume PDF binary content.
+Future auth-backed profile mapping and Gmail token storage need additive migrations that preserve existing data. Resume PDF binaries stay outside Neon; Neon stores document metadata and safe stored paths.
 
-## Manual Codex Analysis Workflow
+## Analysis Direction
 
-1. Jobs are fetched, parsed, deduplicated, and stored in Neon.
-2. Each fetch creates an `ingestion_runs` batch.
-3. Jobs seen in the run are linked through `job_run_occurrences`.
-4. The CLI or future API prepares Markdown/JSON analysis request files.
-5. The user opens Codex separately.
-6. Codex reads the request file and local private profile files.
-7. Codex returns structured JSON.
-8. The CLI or future API imports that JSON into Neon.
-9. The dashboard reads Neon via the local API and displays score, priority, reason, concern, suggested status, and links.
+Manual Codex import remains the fallback path:
 
-Codex usage is separate from this app. This project does not use OpenAI/Gemini API tokens.
+1. CLI or API prepares Markdown/JSON analysis request files.
+2. User opens Codex separately.
+3. Codex returns structured JSON.
+4. CLI or API validates and imports results into Neon.
 
-## Status vs Discovery
+Gemini becomes the future primary automated analysis path, but it is backend-only:
+
+1. User selects jobs.
+2. Frontend asks the backend to run Gemini analysis.
+3. Backend validates ownership and loads compact active profile summary data.
+4. Backend sends compact job fields to Gemini and validates strict JSON output.
+5. Backend stores score, priority, reason, concern, suggested status, provider, and analysis batch metadata.
+
+Raw Gmail email bodies and full resume PDFs are not sent to Gemini by default. The frontend must never call Gemini directly.
+
+## Status Vs Discovery
 
 Status is the user handling state:
 
@@ -95,26 +137,26 @@ Status is the user handling state:
 - `applied`
 - `ignored`
 
-Discovery is time/batch-based:
+Discovery is time and batch state:
 
 - `new_in_this_run`
 - `seen_before`
 - `historical`
 
-A job can be `status = new` and `discovery = historical`. A job can be `discovery = new_in_this_run` and later `status = saved`.
+A job can be `status = new` and `discovery = historical`. Newly discovered work is filtered from ingestion run data, not from the status field.
 
-## Users
+## Users And Isolation
 
-Future-facing users:
+Future-facing development identities remain:
 
 - `minjian` / Minjian
 - `chang` / Chang
 
-Older database rows may contain legacy user data, but future-facing code, UI, mock data, and docs use Minjian and Chang.
+Auth migration must map browser session identity to backend-owned user data and enforce ownership checks for jobs, runs, analyses, documents, preferences, and Gmail connections. Legacy fixed-user rows should be preserved until an explicit migration handles them.
 
-## Private Profile And Resume Architecture
+## Private Documents
 
-Private files stay local and gitignored:
+Private files stay outside public frontend assets and remain gitignored:
 
 ```text
 private/
@@ -130,38 +172,19 @@ private/
     chang/
 ```
 
-Future `user_documents` table:
+Document types are `profile_markdown`, `resume_pdf`, and `cover_letter_template`.
 
-- `id bigserial primary key`
-- `user_id text not null references app_users(id) on delete cascade`
-- `document_type text not null`
-- `original_filename text not null`
-- `stored_path text not null`
-- `mime_type text`
-- `file_size_bytes bigint`
-- `is_active boolean not null default true`
-- `created_at timestamptz default now()`
+- Active profile summaries are the preferred analysis context.
+- Resume PDFs are reserved for later application material work unless a future explicit policy changes that.
+- Frontend components receive safe metadata through API responses only.
 
-Document types:
+## Docker And Security
 
-- `profile_markdown`
-- `resume_pdf`
-- `cover_letter_template`
+Existing Docker support stays compatible with backend CLI/API and frontend development. `.env`, `secrets/`, `private/`, and generated `output/` files must not be baked into images.
 
-## Docker Usage
+Security invariants:
 
-Existing Docker support remains backend-focused:
-
-- `app`: backend CLI container.
-- Future `api`: local API server.
-- Future `frontend`: Vite dev server.
-
-`.env`, `secrets/`, `private/`, and generated `output/` files must not be baked into images.
-
-## Security Rules
-
-- Never expose `DATABASE_URL` to the browser.
-- Never expose Gmail OAuth client secrets or tokens.
-- Never expose private profiles or resume PDFs as public URLs.
-- Never add OpenAI API, Gemini API, or LLM provider abstractions.
-- Keep Codex analysis manual or semi-manual.
+- Do not expose `DATABASE_URL`, Gmail OAuth secrets/tokens, Gemini keys, or private documents.
+- Keep frontend -> backend -> Neon as the data path.
+- Use Google login and Gmail OAuth as separate authorization concepts.
+- Add backend auth, Gmail, and Gemini runtime behavior only in staged phases.

@@ -6,7 +6,7 @@ from email.utils import parsedate_to_datetime
 from pathlib import Path
 from typing import Any
 
-from .config import ConfigError, PROJECT_ROOT, get_env_value, load_users_config
+from .config import ConfigError, REPO_ROOT, get_env_value, load_users_config
 from .email_content import body_hash, extract_bodies_from_gmail_message, preferred_text_body
 from .models import EmailMessageContent, EmailMessageMetadata
 
@@ -40,7 +40,7 @@ def _resolve_project_path(value: str) -> Path:
     path = Path(value).expanduser()
     if path.is_absolute():
         return path
-    return PROJECT_ROOT / path
+    return REPO_ROOT / path
 
 
 def load_gmail_oauth_settings() -> GmailOAuthSettings:

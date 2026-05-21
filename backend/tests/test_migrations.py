@@ -3,7 +3,7 @@ from __future__ import annotations
 from pathlib import Path
 
 from job_alert_automation import cli
-from job_alert_automation.migrations import MigrationResult, list_migration_files
+from job_alert_automation.migrations import MIGRATIONS_DIR, MigrationResult, list_migration_files
 
 
 def test_migration_sql_files_are_discoverable() -> None:
@@ -22,7 +22,7 @@ def test_migration_sql_files_are_ordered(tmp_path: Path) -> None:
 
 
 def test_initial_schema_tracks_schema_migrations() -> None:
-    sql = Path("migrations/001_initial_schema.sql").read_text(encoding="utf-8")
+    sql = (MIGRATIONS_DIR / "001_initial_schema.sql").read_text(encoding="utf-8")
 
     assert "CREATE TABLE IF NOT EXISTS schema_migrations" in sql
     assert "CREATE UNIQUE INDEX IF NOT EXISTS jobs_source_url_hash_unique" in sql
@@ -32,7 +32,7 @@ def test_initial_schema_tracks_schema_migrations() -> None:
 
 
 def test_analysis_and_batches_migration_exists() -> None:
-    sql = Path("migrations/002_analysis_and_batches.sql").read_text(encoding="utf-8")
+    sql = (MIGRATIONS_DIR / "002_analysis_and_batches.sql").read_text(encoding="utf-8")
 
     assert "CREATE TABLE IF NOT EXISTS job_run_occurrences" in sql
     assert "seen_as_new boolean NOT NULL DEFAULT false" in sql

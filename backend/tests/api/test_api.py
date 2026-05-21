@@ -207,12 +207,12 @@ def test_import_analysis_missing_database_url_is_safe(monkeypatch, tmp_path: Pat
     import job_alert_automation.config as config_module
 
     monkeypatch.setattr(config_module, "DEFAULT_ENV_PATH", tmp_path / ".env")
-    result_path = Path("output/analysis_results/api_missing_db_result.json")
+    result_path = config_module.REPO_ROOT / "output/analysis_results/api_missing_db_result.json"
     result_path.parent.mkdir(parents=True, exist_ok=True)
     result_path.write_text('{"user_id":"minjian","results":[]}', encoding="utf-8")
     client = TestClient(create_app())
 
-    response = client.post("/api/analysis-import", json={"resultPath": str(result_path)})
+    response = client.post("/api/analysis-import", json={"resultPath": str(result_path.relative_to(config_module.REPO_ROOT))})
 
     assert response.status_code == 503
     assert "DATABASE_URL" in response.json()["detail"]

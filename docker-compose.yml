@@ -2,7 +2,8 @@ services:
   app:
     build:
       context: .
-    working_dir: /app
+      dockerfile: backend/Dockerfile
+    working_dir: /app/backend
     env_file:
       - path: .env
         required: false
@@ -16,16 +17,17 @@ services:
   api:
     build:
       context: .
-    working_dir: /app
+      dockerfile: backend/Dockerfile
+    working_dir: /app/backend
     command: uvicorn api.app:app --host 0.0.0.0 --port 8000 --reload
     env_file:
       - path: .env
         required: false
     volumes:
-      - ./api:/app/api
-      - ./job_alert_automation:/app/job_alert_automation
-      - ./config:/app/config
-      - ./migrations:/app/migrations
+      - ./backend/api:/app/backend/api
+      - ./backend/job_alert_automation:/app/backend/job_alert_automation
+      - ./backend/config:/app/backend/config
+      - ./backend/migrations:/app/backend/migrations
       - ./secrets:/app/secrets
       - ./output:/app/output
       - ./private:/app/private

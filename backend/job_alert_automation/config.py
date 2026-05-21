@@ -11,9 +11,10 @@ import yaml
 from .models import AppUser, UserPreferences
 
 
-PROJECT_ROOT = Path(__file__).resolve().parents[1]
-DEFAULT_USERS_CONFIG_PATH = PROJECT_ROOT / "config" / "users.yaml"
-DEFAULT_ENV_PATH = PROJECT_ROOT / ".env"
+BACKEND_ROOT = Path(__file__).resolve().parents[1]
+REPO_ROOT = BACKEND_ROOT.parent
+DEFAULT_USERS_CONFIG_PATH = BACKEND_ROOT / "config" / "users.yaml"
+DEFAULT_ENV_PATH = REPO_ROOT / ".env"
 
 
 class ConfigError(RuntimeError):

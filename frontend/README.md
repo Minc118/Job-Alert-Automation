@@ -6,9 +6,10 @@ Dashboard for the local/manual Job Alert Automation system.
 
 - React, Vite, TypeScript, and Tailwind CSS.
 - Mock mode by default; real local API mode is available for dashboard integration.
+- Public landing, Google-only login copy, mock onboarding, guarded dashboard routes, and mock-only demo routes.
 - No direct Neon connection.
-- No OpenAI API, Gemini API, Codex API, or browser-side AI call.
-- Profile and resume controls are mock-only and do not read local private files.
+- No browser-side OpenAI API, Gemini API, Codex API, Gmail token, or database credential use.
+- Document data stays behind backend APIs; public onboarding upload controls remain mock-only in UI-PUBLIC1.
 
 ## Commands
 
@@ -27,6 +28,18 @@ cd frontend
 npm run dev
 ```
 
+Important routes:
+
+```text
+/              Public landing
+/login         Google-only mock login
+/onboarding    Mock onboarding flow
+/app/overview  Mock-gated dashboard
+/demo          Public mock-only dashboard preview
+```
+
+AUTH0 exposes a future-friendly `AuthProvider` seam backed by mock Google sign-in and onboarding state in `sessionStorage` for the current browser session only.
+
 You can also make it explicit:
 
 ```bash
@@ -37,11 +50,11 @@ npm run dev
 
 ## Real API Mode
 
-Start the local FastAPI server from the repository root:
+Start the local FastAPI server from the backend directory:
 
 ```bash
-cd "/Users/min/Desktop/playground/Job Alert Automation"
-source .venv/bin/activate
+cd "/Users/min/Desktop/playground/Job Alert Automation/backend"
+source ../.venv/bin/activate
 uvicorn api.app:app --reload --host 127.0.0.1 --port 8000
 ```
 
@@ -76,6 +89,17 @@ In real mode, the dashboard can:
 
 It still does not call OpenAI, Gemini, Codex, or any AI API.
 
+## Public Flow Direction
+
+Google app login and Gmail readonly authorization stay separate:
+
+- Google login will identify the app user in later AUTH phases.
+- Gmail connection remains a later explicit job-alert mailbox authorization step.
+
+The detailed AUTH0 direction is documented in `../docs/auth0-auth-architecture.md`. Real Neon Auth and backend session validation stay staged for later phases.
+
+Gemini analysis is a later backend-only workflow. Manual Codex prepare/import remains available through current backend paths.
+
 ## Docker
 
 From the repository root:
@@ -98,4 +122,4 @@ The future production data path is:
 React Dashboard -> Local Backend API -> Neon PostgreSQL
 ```
 
-The manual Codex flow remains file-based: prepare analysis request, open Codex separately, save structured JSON, then import it through the backend CLI or future API.
+The manual Codex flow remains file-based: prepare analysis request, open Codex separately, save structured JSON, then import it through the backend CLI or API.

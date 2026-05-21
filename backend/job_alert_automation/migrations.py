@@ -3,11 +3,11 @@ from __future__ import annotations
 from dataclasses import dataclass
 from pathlib import Path
 
-from .config import PROJECT_ROOT
+from .config import BACKEND_ROOT
 from .database import connect
 
 
-MIGRATIONS_DIR = PROJECT_ROOT / "migrations"
+MIGRATIONS_DIR = BACKEND_ROOT / "migrations"
 
 
 @dataclass(frozen=True)

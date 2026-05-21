@@ -1,0 +1,342 @@
+<!-- Landing Page - Variant 1 (Workflow) -->
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Job Alert Dashboard - Organize job alerts</title>
+<!-- Google Fonts: Inter -->
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<!-- Material Symbols -->
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<!-- Tailwind CSS -->
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<!-- Theme Configuration -->
+<script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            "colors": {
+                    "outline-variant": "#c4c7c7",
+                    "background": "#f7f9fb",
+                    "secondary-fixed-dim": "#b7c8e1",
+                    "inverse-surface": "#2d3133",
+                    "surface": "#f7f9fb",
+                    "on-surface": "#191c1e",
+                    "on-secondary-container": "#54647a",
+                    "on-primary-fixed": "#1b1c1c",
+                    "secondary": "#505f76",
+                    "on-secondary-fixed-variant": "#38485d",
+                    "error-container": "#ffdad6",
+                    "tertiary": "#1b1a19",
+                    "tertiary-container": "#302f2d",
+                    "on-tertiary-fixed": "#1c1b1a",
+                    "tertiary-fixed-dim": "#c9c6c3",
+                    "on-error-container": "#93000a",
+                    "surface-container-lowest": "#ffffff",
+                    "on-surface-variant": "#444748",
+                    "on-tertiary-container": "#999693",
+                    "on-tertiary": "#ffffff",
+                    "on-secondary": "#ffffff",
+                    "on-background": "#191c1e",
+                    "secondary-container": "#d0e1fb",
+                    "surface-bright": "#f7f9fb",
+                    "primary-fixed": "#e4e2e1",
+                    "secondary-fixed": "#d3e4fe",
+                    "on-tertiary-fixed-variant": "#484644",
+                    "on-primary-fixed-variant": "#474747",
+                    "surface-container-low": "#f2f4f6",
+                    "surface-container": "#eceef0",
+                    "on-primary-container": "#989696",
+                    "tertiary-fixed": "#e6e2de",
+                    "primary-fixed-dim": "#c8c6c6",
+                    "error": "#ba1a1a",
+                    "surface-container-high": "#e6e8ea",
+                    "on-secondary-fixed": "#0b1c30",
+                    "surface-tint": "#5f5e5e",
+                    "surface-dim": "#d8dadc",
+                    "primary-container": "#2f2f2f",
+                    "primary": "#1a1a1a",
+                    "surface-variant": "#e0e3e5",
+                    "inverse-primary": "#c8c6c6",
+                    "outline": "#747878",
+                    "on-error": "#ffffff",
+                    "inverse-on-surface": "#eff1f3",
+                    "on-primary": "#ffffff",
+                    "surface-container-highest": "#e0e3e5"
+            },
+            "borderRadius": {
+                    "DEFAULT": "0.25rem",
+                    "lg": "0.5rem",
+                    "xl": "0.75rem",
+                    "full": "9999px"
+            },
+            "spacing": {
+                    "xs": "4px",
+                    "margin_desktop": "32px",
+                    "lg": "24px",
+                    "md": "16px",
+                    "gutter": "16px",
+                    "base_unit": "4px",
+                    "sm": "8px",
+                    "margin_mobile": "16px",
+                    "xl": "32px"
+            },
+            "fontFamily": {
+                    "headline-md": ["Inter"],
+                    "display-lg": ["Inter"],
+                    "label-md": ["Inter"],
+                    "label-sm": ["Inter"],
+                    "body-md": ["Inter"],
+                    "body-lg": ["Inter"],
+                    "headline-sm": ["Inter"],
+                    "headline-md-mobile": ["Inter"]
+            },
+            "fontSize": {
+                    "headline-md": ["24px", {"lineHeight": "32px", "letterSpacing": "-0.01em", "fontWeight": "600"}],
+                    "display-lg": ["32px", {"lineHeight": "40px", "letterSpacing": "-0.02em", "fontWeight": "600"}],
+                    "label-md": ["12px", {"lineHeight": "16px", "letterSpacing": "0.02em", "fontWeight": "500"}],
+                    "label-sm": ["11px", {"lineHeight": "14px", "fontWeight": "600"}],
+                    "body-md": ["14px", {"lineHeight": "20px", "fontWeight": "400"}],
+                    "body-lg": ["16px", {"lineHeight": "24px", "fontWeight": "400"}],
+                    "headline-sm": ["20px", {"lineHeight": "28px", "fontWeight": "500"}],
+                    "headline-md-mobile": ["20px", {"lineHeight": "28px", "fontWeight": "600"}]
+            }
+          }
+        }
+      }
+    </script>
+<style>
+        body { font-family: 'Inter', sans-serif; }
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        .soft-shadow {
+            box-shadow: 0 4px 24px -2px rgba(0, 0, 0, 0.04), 0 0 2px rgba(0,0,0,0.02);
+        }
+    </style>
+</head>
+<body class="bg-background text-on-background antialiased min-h-screen flex flex-col selection:bg-secondary-container selection:text-on-secondary-container">
+<!-- Top Navigation -->
+<nav class="bg-surface-container-lowest sticky top-0 z-50 shadow-sm border-b border-outline-variant/30">
+<div class="max-w-6xl mx-auto flex justify-between items-center h-16 px-margin_desktop">
+<div class="flex items-center gap-sm">
+<span class="material-symbols-outlined text-primary text-[24px]">work</span>
+<span class="font-headline-sm text-headline-sm text-primary">Job Alert Dashboard</span>
+</div>
+<div class="hidden md:flex items-center gap-lg">
+<a class="font-body-md text-body-md text-on-surface-variant hover:text-primary transition-colors" href="#how-it-works">How it works</a>
+<a class="font-body-md text-body-md text-on-surface-variant hover:text-primary transition-colors" href="#privacy">Privacy</a>
+<button class="bg-primary-container text-on-primary font-label-md text-label-md px-md py-sm rounded flex items-center gap-xs hover:bg-primary transition-colors">
+<span class="material-symbols-outlined text-[18px]">login</span>
+                    Continue with Google
+                </button>
+</div>
+<div class="flex md:hidden">
+<button class="text-on-surface-variant"><span class="material-symbols-outlined">menu</span></button>
+</div>
+</div>
+</nav>
+<!-- Main Content Canvas -->
+<main class="flex-grow flex flex-col w-full">
+<!-- Hero Section -->
+<section class="max-w-4xl mx-auto w-full px-margin_mobile md:px-margin_desktop pt-[80px] pb-[64px] flex flex-col items-center text-center">
+<h1 class="font-display-lg text-display-lg text-primary mb-lg max-w-3xl leading-tight">Organize job alerts and focus on the opportunities that fit.</h1>
+<p class="font-body-lg text-body-lg text-on-surface-variant mb-xl max-w-2xl">Collect job alert emails, analyze roles with AI, and track applications in one calm dashboard.</p>
+<div class="flex flex-col sm:flex-row gap-md items-center justify-center w-full">
+<button class="w-full sm:w-auto bg-primary-container text-on-primary font-label-md text-label-md px-lg py-md rounded-lg flex items-center justify-center gap-sm hover:bg-primary transition-all soft-shadow">
+<span class="material-symbols-outlined text-[20px]">login</span>
+                    Continue with Google
+                </button>
+<button class="w-full sm:w-auto bg-surface-container-lowest text-primary border border-outline-variant/50 font-label-md text-label-md px-lg py-md rounded-lg flex items-center justify-center gap-sm hover:bg-surface-container-low transition-colors">
+<span class="material-symbols-outlined text-[20px]">dashboard</span>
+                    View demo dashboard
+                </button>
+</div>
+<p class="font-label-sm text-label-sm text-on-surface-variant mt-sm opacity-70">Note: Gmail access is connected separately after login.</p>
+</section>
+<!-- Product Preview Bento Grid -->
+<section class="max-w-6xl mx-auto w-full px-margin_mobile md:px-margin_desktop pb-[96px]">
+<div class="bg-surface-container-lowest rounded-xl p-lg md:p-xl border border-outline-variant/30 soft-shadow w-full flex flex-col gap-lg">
+<div class="flex justify-between items-center border-b border-outline-variant/20 pb-md">
+<h2 class="font-headline-sm text-headline-sm text-primary">Overview</h2>
+<span class="material-symbols-outlined text-on-surface-variant">more_horiz</span>
+</div>
+<div class="grid grid-cols-1 md:grid-cols-12 gap-gutter">
+<div class="md:col-span-3 flex flex-col gap-sm">
+<div class="bg-surface-container-low rounded p-md flex justify-between items-center">
+<span class="font-label-md text-label-md text-on-surface-variant">New Jobs</span>
+<span class="font-label-md text-label-md text-primary font-bold">12</span>
+</div>
+<div class="bg-secondary-container/30 rounded p-md flex justify-between items-center border border-secondary-container/50">
+<span class="font-label-md text-label-md text-on-secondary-container flex items-center gap-xs"><span class="material-symbols-outlined text-[16px]">new_releases</span> Newly Discovered</span>
+<span class="font-label-md text-label-md text-on-secondary-container font-bold">8</span>
+</div>
+<div class="bg-surface-container-lowest rounded p-md flex justify-between items-center border border-outline-variant/20">
+<span class="font-label-md text-label-md text-on-surface-variant flex items-center gap-xs"><span class="material-symbols-outlined text-[16px] text-[#8b5cf6]">psychology</span> AI High Priority</span>
+<span class="font-label-md text-label-md text-primary font-bold">3</span>
+</div>
+<div class="bg-surface-container-low rounded p-md flex justify-between items-center mt-sm">
+<span class="font-label-md text-label-md text-on-surface-variant flex items-center gap-xs"><span class="material-symbols-outlined text-[16px]">bookmark</span> Saved</span>
+<span class="font-label-md text-label-md text-primary font-bold">4</span>
+</div>
+<div class="bg-surface-container-low rounded p-md flex justify-between items-center">
+<span class="font-label-md text-label-md text-on-surface-variant flex items-center gap-xs"><span class="material-symbols-outlined text-[16px]">send</span> Applied</span>
+<span class="font-label-md text-label-md text-primary font-bold">2</span>
+</div>
+<div class="bg-surface-container-low rounded p-md flex justify-between items-center">
+<span class="font-label-md text-label-md text-on-surface-variant flex items-center gap-xs"><span class="material-symbols-outlined text-[16px]">block</span> Ignored</span>
+<span class="font-label-md text-label-md text-on-surface-variant font-bold">10</span>
+</div>
+</div>
+<div class="md:col-span-9 flex flex-col gap-gutter">
+<div class="bg-surface-container-lowest rounded-lg border-l-4 border-[#8b5cf6] border-y border-r border-outline-variant/30 p-lg relative group">
+<div class="absolute top-md right-md flex gap-xs">
+<span class="bg-[#8b5cf6]/10 text-[#8b5cf6] font-label-sm text-label-sm px-2 py-1 rounded flex items-center gap-1">
+<span class="material-symbols-outlined text-[14px]">psychology</span> 92/100 Match
+                                </span>
+<span class="bg-surface-container-high text-on-surface-variant font-label-sm text-label-sm px-2 py-1 rounded">New</span>
+</div>
+<h3 class="font-headline-sm text-headline-sm text-primary mb-xs pr-[120px]">Werkstudent KI &amp; Automatisierung</h3>
+<div class="flex items-center gap-sm text-on-surface-variant font-body-md text-body-md mb-md">
+<span class="material-symbols-outlined text-[18px]">domain</span> Siemens Energy
+                                <span class="text-outline-variant">•</span>
+<span class="material-symbols-outlined text-[18px]">location_on</span> Erlangen, DE
+                            </div>
+<p class="font-body-md text-body-md text-on-surface-variant/80 line-clamp-2 mb-md">
+                                We are looking for a working student to support our AI and Automation team. You will help build internal tools and integrate LLMs into existing engineering workflows.
+                            </p>
+<div class="flex gap-sm">
+<button class="bg-surface-container text-on-surface font-label-md text-label-md px-sm py-xs rounded hover:bg-surface-container-high">Save for later</button>
+<button class="bg-surface-container text-on-surface font-label-md text-label-md px-sm py-xs rounded hover:bg-surface-container-high">Mark Applied</button>
+<button class="text-on-surface-variant ml-auto hover:text-error transition-colors"><span class="material-symbols-outlined">delete</span></button>
+</div>
+</div>
+<div class="bg-surface-container-lowest rounded-lg border border-outline-variant/30 p-lg opacity-70 grayscale-[30%]">
+<h3 class="font-headline-sm text-headline-sm text-primary mb-xs">Frontend Engineer Intern</h3>
+<div class="flex items-center gap-sm text-on-surface-variant font-body-md text-body-md">
+<span class="material-symbols-outlined text-[18px]">domain</span> TechStart
+                                <span class="text-outline-variant">•</span>
+<span class="material-symbols-outlined text-[18px]">location_on</span> Remote
+                            </div>
+</div>
+</div>
+</div>
+</div>
+</section>
+<!-- How it works -->
+<section class="bg-surface-container-low py-[80px] px-margin_mobile md:px-margin_desktop border-y border-outline-variant/20" id="how-it-works">
+<div class="max-w-6xl mx-auto w-full">
+<h2 class="font-display-lg text-display-lg text-primary mb-xl text-center">How it works</h2>
+<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-gutter">
+<div class="bg-surface-container-lowest p-lg rounded-lg soft-shadow flex flex-col items-start gap-md">
+<div class="w-12 h-12 bg-surface-container rounded-full flex items-center justify-center">
+<span class="material-symbols-outlined text-[24px] text-primary">login</span>
+</div>
+<h3 class="font-headline-sm text-headline-sm text-primary">1. Sign in</h3>
+<p class="font-body-md text-body-md text-on-surface-variant">Sign in securely with your Google account to create your dashboard profile.</p>
+</div>
+<div class="bg-surface-container-lowest p-lg rounded-lg soft-shadow flex flex-col items-start gap-md border-l-2 border-secondary-container">
+<div class="w-12 h-12 bg-secondary-container/30 rounded-full flex items-center justify-center">
+<span class="material-symbols-outlined text-[24px] text-on-secondary-container">mail</span>
+</div>
+<h3 class="font-headline-sm text-headline-sm text-primary">2. Connect Gmail</h3>
+<p class="font-body-md text-body-md text-on-surface-variant">Connect Gmail separately to allow read-only access to specific job alert emails.</p>
+</div>
+<div class="bg-surface-container-lowest p-lg rounded-lg soft-shadow flex flex-col items-start gap-md border-l-2 border-[#8b5cf6]/30">
+<div class="w-12 h-12 bg-[#8b5cf6]/10 rounded-full flex items-center justify-center">
+<span class="material-symbols-outlined text-[24px] text-[#8b5cf6]">psychology</span>
+</div>
+<h3 class="font-headline-sm text-headline-sm text-primary">3. Analyze Jobs</h3>
+<p class="font-body-md text-body-md text-on-surface-variant">AI automatically parses roles, extracts key criteria, and scores them against your profile.</p>
+</div>
+<div class="bg-surface-container-lowest p-lg rounded-lg soft-shadow flex flex-col items-start gap-md">
+<div class="w-12 h-12 bg-surface-container rounded-full flex items-center justify-center">
+<span class="material-symbols-outlined text-[24px] text-primary">task_alt</span>
+</div>
+<h3 class="font-headline-sm text-headline-sm text-primary">4. Track Progress</h3>
+<p class="font-body-md text-body-md text-on-surface-variant">Move jobs through stages, mark as applied, or ignore irrelevant ones to keep focus.</p>
+</div>
+</div>
+</div>
+</section>
+<!-- Features -->
+<section class="max-w-6xl mx-auto w-full px-margin_mobile md:px-margin_desktop py-[96px]">
+<div class="grid grid-cols-1 md:grid-cols-3 gap-gutter">
+<div class="bg-surface-container-lowest p-lg rounded-lg border border-outline-variant/30 flex flex-col gap-sm">
+<span class="material-symbols-outlined text-[28px] text-on-surface-variant mb-sm">all_inbox</span>
+<h3 class="font-headline-sm text-headline-sm text-primary">Job alert collection</h3>
+<p class="font-body-md text-body-md text-on-surface-variant">Centralizes notifications from LinkedIn, StepStone, Indeed, and others into one clean view.</p>
+</div>
+<div class="bg-surface-container-lowest p-lg rounded-lg border border-outline-variant/30 flex flex-col gap-sm">
+<span class="material-symbols-outlined text-[28px] text-on-surface-variant mb-sm">smart_toy</span>
+<h3 class="font-headline-sm text-headline-sm text-primary">AI job analysis</h3>
+<p class="font-body-md text-body-md text-on-surface-variant">Automatically extracts salary, location, tech stack, and scores fit based on your resume.</p>
+</div>
+<div class="bg-surface-container-lowest p-lg rounded-lg border border-outline-variant/30 flex flex-col gap-sm">
+<span class="material-symbols-outlined text-[28px] text-on-surface-variant mb-sm">view_kanban</span>
+<h3 class="font-headline-sm text-headline-sm text-primary">Application tracking</h3>
+<p class="font-body-md text-body-md text-on-surface-variant">Simple kanban-style management. Save, apply, interview, and reject states.</p>
+</div>
+</div>
+</section>
+<!-- Privacy Section -->
+<section class="bg-surface-container-lowest border-y border-outline-variant/20 py-[80px] px-margin_mobile md:px-margin_desktop" id="privacy">
+<div class="max-w-4xl mx-auto w-full">
+<div class="flex items-center gap-sm mb-lg">
+<span class="material-symbols-outlined text-[32px] text-primary">shield_lock</span>
+<h2 class="font-display-lg text-display-lg text-primary">Privacy and control</h2>
+</div>
+<div class="grid grid-cols-1 md:grid-cols-2 gap-md">
+<div class="p-md bg-surface border border-outline-variant/20 rounded">
+<h4 class="font-headline-sm text-headline-sm text-primary mb-xs">Login vs. Data Access</h4>
+<p class="font-body-md text-body-md text-on-surface-variant">Logging in only creates your account. Gmail connection is a separate, optional step requiring specific read-only permissions.</p>
+</div>
+<div class="p-md bg-surface border border-outline-variant/20 rounded">
+<h4 class="font-headline-sm text-headline-sm text-primary mb-xs">Backend-only Analysis</h4>
+<p class="font-body-md text-body-md text-on-surface-variant">Email parsing and AI analysis happens securely on our servers, not in your browser, ensuring data integrity.</p>
+</div>
+<div class="p-md bg-surface border border-outline-variant/20 rounded">
+<h4 class="font-headline-sm text-headline-sm text-primary mb-xs">No Direct DB Access</h4>
+<p class="font-body-md text-body-md text-on-surface-variant">User data is siloed. Support staff cannot access your raw emails, resume data, or parsed jobs directly.</p>
+</div>
+<div class="p-md bg-surface border border-outline-variant/20 rounded">
+<h4 class="font-headline-sm text-headline-sm text-primary mb-xs">Resume Handling</h4>
+<p class="font-body-md text-body-md text-on-surface-variant">Your uploaded resume is used strictly as context for the AI matching algorithm and is never shared.</p>
+</div>
+</div>
+</div>
+</section>
+<!-- Final CTA -->
+<section class="max-w-3xl mx-auto w-full px-margin_mobile md:px-margin_desktop py-[96px] text-center flex flex-col items-center">
+<h2 class="font-display-lg text-display-lg text-primary mb-lg">Start with your existing job alerts.</h2>
+<div class="flex flex-col sm:flex-row gap-md justify-center w-full">
+<button class="w-full sm:w-auto bg-primary-container text-on-primary font-label-md text-label-md px-lg py-md rounded-lg flex items-center justify-center gap-sm hover:bg-primary transition-all soft-shadow">
+<span class="material-symbols-outlined text-[20px]">login</span>
+                    Continue with Google
+                </button>
+<button class="w-full sm:w-auto bg-surface-container-lowest text-primary border border-outline-variant/50 font-label-md text-label-md px-lg py-md rounded-lg flex items-center justify-center gap-sm hover:bg-surface-container-low transition-colors">
+<span class="material-symbols-outlined text-[20px]">dashboard</span>
+                    View demo dashboard
+                </button>
+</div>
+</section>
+</main>
+<!-- Footer -->
+<footer class="bg-surface-container-low py-lg border-t border-outline-variant/20 px-margin_desktop mt-auto">
+<div class="max-w-6xl mx-auto flex justify-between items-center text-on-surface-variant">
+<div class="font-label-sm text-label-sm flex items-center gap-xs">
+<span class="material-symbols-outlined text-[16px]">work</span>
+                Job Alert Dashboard © 2024
+            </div>
+<div class="flex gap-md font-label-md text-label-md">
+<a class="hover:text-primary transition-colors" href="#">Privacy</a>
+<a class="hover:text-primary transition-colors" href="#">Terms</a>
+</div>
+</div>
+</footer>
+</body></html>

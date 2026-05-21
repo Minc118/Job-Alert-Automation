@@ -7,7 +7,7 @@ from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any
 
-from .config import ConfigError, PROJECT_ROOT, get_env_value, load_users_config
+from .config import ConfigError, REPO_ROOT, get_env_value, load_users_config
 from .database import connect
 from .repository import (
     AnalysisBatchRecord,
@@ -26,7 +26,7 @@ from .repository import (
 
 VALID_PRIORITIES = {"High", "Medium", "Low"}
 VALID_SUGGESTED_STATUSES = {"new", "saved", "applied", "ignored"}
-ANALYSIS_REQUEST_DIR = PROJECT_ROOT / "output" / "analysis_requests"
+ANALYSIS_REQUEST_DIR = REPO_ROOT / "output" / "analysis_requests"
 
 
 @dataclass(frozen=True)
@@ -58,7 +58,7 @@ def profile_path_for_user(user_id: str) -> Path:
     path = Path(configured).expanduser()
     if path.is_absolute():
         return path
-    return PROJECT_ROOT / path
+    return REPO_ROOT / path
 
 
 def load_profile_content(user_id: str) -> ProfileContent:
@@ -96,7 +96,7 @@ def _datetime_value(value: Any) -> str | None:
 
 def _display_path(path: Path) -> str:
     try:
-        return str(path.relative_to(PROJECT_ROOT))
+        return str(path.relative_to(REPO_ROOT))
     except ValueError:
         return str(path)
 

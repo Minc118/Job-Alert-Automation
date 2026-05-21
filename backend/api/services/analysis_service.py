@@ -8,11 +8,11 @@ from api.schemas import AnalysisImportCreate, AnalysisImportResponse, AnalysisRe
 from api.services.database import require_database_url
 from api.services.user_service import validate_user_id
 from job_alert_automation.analysis import AnalysisFilters, AnalysisValidationError, import_analysis_results, prepare_analysis_request
-from job_alert_automation.config import ConfigError, PROJECT_ROOT
+from job_alert_automation.config import ConfigError, REPO_ROOT
 from job_alert_automation.database import DatabaseError
 
 
-ANALYSIS_RESULTS_DIR = PROJECT_ROOT / "output" / "analysis_results"
+ANALYSIS_RESULTS_DIR = REPO_ROOT / "output" / "analysis_results"
 
 
 def create_analysis_request(payload: AnalysisRequestCreate) -> AnalysisRequestResponse:
@@ -56,7 +56,7 @@ def _safe_analysis_result_path(result_path: str) -> Path:
         raise HTTPException(status_code=status.HTTP_422_UNPROCESSABLE_ENTITY, detail="resultPath is required.")
 
     raw_path = Path(result_path).expanduser()
-    candidate = raw_path if raw_path.is_absolute() else PROJECT_ROOT / raw_path
+    candidate = raw_path if raw_path.is_absolute() else REPO_ROOT / raw_path
     resolved = candidate.resolve()
     allowed_dir = ANALYSIS_RESULTS_DIR.resolve()
 
@@ -70,7 +70,7 @@ def _safe_analysis_result_path(result_path: str) -> Path:
     if not resolved.exists():
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Analysis result file was not found.")
 
-    return resolved.relative_to(PROJECT_ROOT)
+    return resolved.relative_to(REPO_ROOT)
 
 
 def import_analysis_result(payload: AnalysisImportCreate) -> AnalysisImportResponse:
