@@ -1,0 +1,52 @@
+services:
+  app:
+    build:
+      context: .
+    working_dir: /app
+    env_file:
+      - path: .env
+        required: false
+    volumes:
+      - ./secrets:/app/secrets
+      - ./output:/app/output
+      - ./private:/app/private
+    stdin_open: true
+    tty: true
+
+  api:
+    build:
+      context: .
+    working_dir: /app
+    command: uvicorn api.app:app --host 0.0.0.0 --port 8000 --reload
+    env_file:
+      - path: .env
+        required: false
+    volumes:
+      - ./api:/app/api
+      - ./job_alert_automation:/app/job_alert_automation
+      - ./config:/app/config
+      - ./migrations:/app/migrations
+      - ./secrets:/app/secrets
+      - ./output:/app/output
+      - ./private:/app/private
+    ports:
+      - "8000:8000"
+
+  frontend:
+    build:
+      context: ./frontend
+    working_dir: /app/frontend
+    command: npm run dev -- --host 0.0.0.0
+    environment:
+      VITE_API_MODE: ${VITE_API_MODE:-real}
+      VITE_API_BASE_URL: ${VITE_API_BASE_URL:-http://127.0.0.1:8000}
+    volumes:
+      - ./frontend:/app/frontend
+      - frontend_node_modules:/app/frontend/node_modules
+    ports:
+      - "5173:5173"
+    depends_on:
+      - api
+
+volumes:
+  frontend_node_modules:

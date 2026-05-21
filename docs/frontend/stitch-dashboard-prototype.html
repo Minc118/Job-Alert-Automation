@@ -1,0 +1,90 @@
+<!--
+Stitch dashboard prototype source of truth.
+
+The full Stitch HTML was provided in the implementation prompt and includes:
+- Overview page
+- Jobs page
+- Settings page
+- Tailwind CDN config with Inter typography and Material Symbols
+- surface/background/primary/secondary token system
+- sidebar, topbar, cards, tables, drawer, badges, and settings sections
+
+This project implements F1 by extracting the visible design system and layout structure
+from that supplied prototype. The implemented docs/design-system-extracted.md records the
+tokens and components used by the React/Tailwind conversion.
+-->
+<!DOCTYPE html>
+<html class="light" lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta content="width=device-width, initial-scale=1.0" name="viewport" />
+    <title>Stitch Prototype Reference - Job Alert Dashboard</title>
+    <script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            colors: {
+              "tertiary-container": "#302f2d",
+              "surface-tint": "#5f5e5e",
+              "surface-variant": "#e0e3e5",
+              "inverse-surface": "#2d3133",
+              "primary-container": "#2f2f2f",
+              "secondary": "#505f76",
+              "surface-container-high": "#e6e8ea",
+              "outline-variant": "#c4c7c7",
+              "surface-dim": "#d8dadc",
+              "surface-container-lowest": "#ffffff",
+              "on-surface": "#191c1e",
+              "on-background": "#191c1e",
+              "surface-container-highest": "#e0e3e5",
+              "on-primary": "#ffffff",
+              "surface-container": "#eceef0",
+              "surface": "#f7f9fb",
+              "secondary-fixed": "#d3e4fe",
+              "primary": "#1a1a1a",
+              "error": "#ba1a1a",
+              "on-surface-variant": "#444748",
+              "secondary-container": "#d0e1fb",
+              "background": "#f7f9fb",
+              "outline": "#747878",
+              "surface-container-low": "#f2f4f6",
+              "surface-bright": "#f7f9fb"
+            },
+            borderRadius: {
+              DEFAULT: "0.25rem",
+              lg: "0.5rem",
+              xl: "0.75rem",
+              full: "9999px"
+            },
+            spacing: {
+              gutter: "16px",
+              margin_mobile: "16px",
+              xl: "32px",
+              margin_desktop: "32px",
+              md: "16px",
+              base_unit: "4px",
+              xs: "4px",
+              lg: "24px",
+              sm: "8px"
+            },
+            fontFamily: {
+              "headline-sm": ["Inter"],
+              "body-md": ["Inter"],
+              "body-lg": ["Inter"],
+              "display-lg": ["Inter"],
+              "headline-md": ["Inter"],
+              "label-md": ["Inter"]
+            }
+          }
+        }
+      }
+    </script>
+  </head>
+  <body>
+    <main>
+      <h1>Job Alert Dashboard</h1>
+      <p>Reference file preserving the Stitch prototype tokens and page inventory from the prompt.</p>
+    </main>
+  </body>
+</html>

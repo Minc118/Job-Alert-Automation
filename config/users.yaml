@@ -1,0 +1,68 @@
+users:
+  minjian:
+    display_name: Minjian
+    email: minjian@example.invalid
+    target_role_keywords:
+      - werkstudent ai
+      - werkstudent ki
+      - werkstudent softwareentwicklung
+      - working student software engineering
+      - working student automation
+      - working student data
+      - werkstudent it projektmanagement
+      - werkstudent product management
+      - werkstudent data
+      - werkstudent automation
+      - werkstudent digitalisierung
+      - junior software developer
+      - student assistant it
+    preferred_locations:
+      - berlin
+      - potsdam
+      - remote
+      - hybrid berlin
+      - hybrid potsdam
+    excluded_keywords:
+      - senior
+      - lead
+      - principal
+      - internship unpaid
+      - praktikum unbezahlt
+    source_queries:
+      linkedin: "from:(jobs-noreply@linkedin.com) newer_than:7d"
+      stepstone: "from:(stepstone) newer_than:7d"
+      indeed: "from:(indeed) newer_than:7d"
+
+  chang:
+    display_name: Chang
+    email: chang@example.invalid
+    target_role_keywords:
+      - project management
+      - junior project manager
+      - project coordinator
+      - marketing
+      - communications
+      - public relations
+      - pr
+      - business development
+      - operations
+      - digital transformation
+      - team assistant
+    preferred_locations:
+      - berlin
+      - potsdam
+      - remote
+      - hybrid berlin
+      - hybrid potsdam
+    excluded_keywords:
+      - senior
+      - lead
+      - director
+      - native german required
+      - muttersprachlich deutsch
+      - internship unpaid
+      - praktikum unbezahlt
+    source_queries:
+      linkedin: "from:(jobs-noreply@linkedin.com) newer_than:7d"
+      stepstone: "from:(stepstone) newer_than:7d"
+      indeed: "from:(indeed) newer_than:7d"
