@@ -17,6 +17,9 @@ export default function AppShell({
   onNavigate,
   onRefreshData,
   onUserChange,
+  signedInDisplayName,
+  showRefreshData = true,
+  showUserSwitcher = true,
 }: {
   children: ReactNode;
   page: Page;
@@ -25,6 +28,9 @@ export default function AppShell({
   onNavigate: (page: Page) => void;
   onRefreshData: () => void | Promise<void>;
   onUserChange: (userId: UserId) => void;
+  signedInDisplayName?: string;
+  showRefreshData?: boolean;
+  showUserSwitcher?: boolean;
 }) {
   return (
     <div className="min-h-screen bg-background text-on-background">
@@ -35,6 +41,9 @@ export default function AppShell({
           onUserChange={onUserChange}
           page={page}
           selectedUserId={selectedUserId}
+          showRefreshData={showRefreshData}
+          showUserSwitcher={showUserSwitcher}
+          signedInDisplayName={signedInDisplayName}
           users={users}
         />
         {children}

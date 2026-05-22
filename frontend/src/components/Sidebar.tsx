@@ -1,3 +1,4 @@
+import { Link } from "react-router-dom";
 import type { Page } from "../types";
 
 const navItems: Array<{ page: Page; label: string; icon: string }> = [
@@ -10,7 +11,9 @@ export default function Sidebar({ page, onNavigate }: { page: Page; onNavigate: 
   return (
     <nav className="fixed left-0 top-0 z-50 hidden h-screen w-64 flex-col gap-sm border-r border-outline-variant bg-surface-container-low py-lg md:flex">
       <div className="px-5 pb-6">
-        <h1 className="font-headline-sm text-headline-sm font-bold text-primary">Job Alert Dashboard</h1>
+        <Link className="block font-headline-sm text-headline-sm font-bold text-primary hover:opacity-80" to="/">
+          Job Alert Dashboard
+        </Link>
         <p className="mt-1 font-label-md text-label-md text-on-surface-variant">Automation Hub</p>
       </div>
       <div className="px-5">

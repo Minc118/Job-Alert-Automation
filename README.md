@@ -20,7 +20,7 @@ The project started as a local/manual CLI. It now also contains a FastAPI dashbo
 - LinkedIn, StepStone, and Indeed parsing
 - Dashboard frontend work that now exists in the later frontend phases
 
-Phase 2A adds readonly Gmail OAuth and metadata fetching only. It still does not parse jobs, write Gmail changes, generate digests, or write ingestion data to the database.
+Phase 2A adds readonly Gmail OAuth and metadata fetching only for the legacy fixed-user CLI flow. It still does not parse jobs, write Gmail changes, generate digests, or write ingestion data to the database.
 
 Phase 2B adds parser and rule-filtering foundations in code and tests. It can parse LinkedIn, StepStone, and Indeed alert content into `ParsedJob` objects and mark likely relevance using configured keywords, locations, and exclusions.
 
@@ -44,10 +44,11 @@ Google login and Gmail OAuth are separate:
 
 - Future Google login identifies the app user.
 - Gmail readonly authorization is a separate connection step for job alert email reading.
+- Legacy `GOOGLE_TOKEN_MINJIAN` / `GOOGLE_TOKEN_CHANG` env paths exist only for fixed-user CLI token files. Web multi-user Gmail credentials are encrypted and stored behind FastAPI instead.
 
-The preferred auth direction is Neon Auth with Google OAuth if it is feasible. AUTH0 keeps the frontend auth boundary mock-only and documents the future identity/session direction in `docs/auth0-auth-architecture.md`. Email/password registration, password reset, real Google login, backend session validation, multi-user Gmail OAuth, and Gemini runtime analysis are not implemented in AUTH0.
+The preferred auth direction is Neon Auth with Google OAuth. AUTH1 adds a frontend Neon Auth mode behind the `AuthProvider` boundary while mock auth stays the default local fallback. AUTH2 adds a backend `/api/me` identity check for Neon Auth JWTs. AUTH3 adds an additive Neon Auth subject -> app user profile mapping and session-scoped dashboard reads. GMAIL-MU1 adds the authenticated Gmail readonly connect/status/disconnect boundary. GMAIL-MU2 adds manual fetch into the existing parser/dedupe/ingestion workflow. AI1 adds the backend-only Gemini analysis boundary and AI2 wires authenticated Jobs selection to it; scheduling stays staged.
 
-Gemini is the future backend-only automated analysis direction. Manual Codex request/import remains the fallback. Browser code must never receive `GEMINI_API_KEY`, `DATABASE_URL`, Gmail OAuth tokens, or private document files.
+Gemini analysis is backend-only. AI1 stores provider-tagged Gemini results from selected authenticated jobs through FastAPI, while manual Codex request/import remains the fallback. DOC2 lets authenticated Settings upload active profile Markdown and resume PDFs into private backend storage; Gemini prefers active profile Markdown and does not send resume PDFs by default. Browser code must never receive `GEMINI_API_KEY`, `DATABASE_URL`, Gmail OAuth tokens, or private document files.
 
 ## Setup
 
@@ -91,7 +92,7 @@ npm install
 npm run dev
 ```
 
-Use `/demo` for mock-only public preview data. `/app/*` currently uses a versioned mock auth session held in browser `sessionStorage`; it does not implement a real Google or Neon Auth session yet.
+Use `/demo` for mock-only public preview data. `/app/*` uses mock auth by default; frontend Neon Auth Google login is enabled only when the frontend is configured with `VITE_AUTH_MODE=neon` and `VITE_NEON_AUTH_URL`. Onboarding completion remains browser-session state until backend session/setup APIs land.
 
 ## Local Dashboard API
 
@@ -114,15 +115,28 @@ Read-only endpoints:
 
 ```text
 GET /api/users
+GET /api/me
+GET /api/user/preferences
+PATCH /api/user/preferences
+POST /api/onboarding/complete
 GET /api/overview?user_id=minjian&range=latest_run
 GET /api/jobs?user_id=minjian&range=latest_run
 GET /api/jobs/{job_id}?user_id=minjian
 GET /api/runs?user_id=minjian
 PATCH /api/user-jobs/{job_id}/status
 POST /api/analysis-requests
+GET /api/gmail/status
+POST /api/gmail/connect
+GET /api/gmail/callback
+POST /api/gmail/disconnect
+POST /api/gmail/fetch
 ```
 
 The API reads `DATABASE_URL` only from local environment or `.env`. It never returns the connection string to the browser. If the database is not configured, database-backed endpoints return a safe configuration error.
+
+`GET /api/me` verifies a frontend Neon Auth JWT against the backend-only `NEON_AUTH_JWKS_URL` setting, provisions the additive app profile mapping when needed, and returns safe identity/profile metadata. Logged-in overview/jobs/runs requests use Bearer token ownership instead of the fixed `minjian`/`chang` selector path. Onboarding now saves auth-scoped role/location/exclusion preferences and completion state through the local API. The authenticated Settings page can start Gmail readonly OAuth, read safe connection status, disconnect stored Gmail authorization metadata, and run a manual Gmail fetch that creates an ingestion batch. DOC2 keeps profile/resume document actions behind the authenticated backend document boundary.
+
+For split frontend/API deployments, set backend `API_CORS_ALLOWED_ORIGINS` to the explicit frontend origin list. Do not use wildcard origins for the authenticated dashboard path.
 
 Status updates are the only F4 write operation. Valid status values are `new`, `saved`, `applied`, and `ignored`.
 
@@ -174,6 +188,21 @@ Run the frontend against the Docker API:
 VITE_API_MODE=real VITE_API_BASE_URL=http://127.0.0.1:8000 docker compose up frontend
 ```
 
+Docker Compose also reads root `.env` for frontend app auth configuration:
+
+```text
+VITE_AUTH_MODE=neon
+VITE_NEON_AUTH_URL=...
+NEON_AUTH_JWKS_URL=...
+GMAIL_OAUTH_REDIRECT_URI=...
+FRONTEND_BASE_URL=...
+GMAIL_OAUTH_STATE_SECRET=...
+GMAIL_TOKEN_ENCRYPTION_KEY=...
+API_CORS_ALLOWED_ORIGINS=...
+```
+
+`VITE_NEON_AUTH_URL` is the public Neon Auth URL. `NEON_AUTH_JWKS_URL` is used by FastAPI to verify the JWT sent to `/api/me`. Gmail web OAuth redirect/state/encryption settings stay backend-only. None of these values is `DATABASE_URL`.
+
 Or start both API and frontend:
 
 ```bash
@@ -187,6 +216,8 @@ http://127.0.0.1:5173
 ```
 
 The frontend still talks only to the local API. It never receives `DATABASE_URL`.
+
+Deployment boundaries, secret tiers, OAuth callback checks, migrations, and current private-document storage requirements are tracked in [docs/deployment-plan.md](docs/deployment-plan.md).
 
 Docker security notes:
 

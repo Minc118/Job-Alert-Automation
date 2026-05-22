@@ -8,6 +8,15 @@ import PublicLandingPage from "./pages/PublicLandingPage";
 
 function OnboardingRoute() {
   const auth = useAuth();
+  if (!auth.ready) {
+    return (
+      <main className="flex min-h-screen items-center justify-center bg-background p-margin_mobile">
+        <div className="rounded-lg border border-surface-variant bg-surface-container-lowest px-lg py-md font-body-md text-body-md text-on-surface-variant">
+          Loading app session...
+        </div>
+      </main>
+    );
+  }
   if (!auth.authenticated) return <Navigate replace to="/login" />;
   if (auth.onboardingComplete) return <Navigate replace to="/app/overview" />;
   return <OnboardingFlow />;

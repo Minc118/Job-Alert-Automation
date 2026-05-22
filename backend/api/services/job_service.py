@@ -135,16 +135,24 @@ def _select_jobs(conn: Any, *, user_id: str, requested_run_id: int | None, limit
     return [_row_to_job(row, requested_run_id=requested_run_id) for row in rows]
 
 
-def list_jobs(user_id: str, *, range_name: str = "latest_run", limit: int = 100) -> list[JobResponse]:
-    validate_user_id(user_id)
-    latest_run = get_latest_run(user_id) if range_name == "latest_run" else None
+def list_jobs(
+    user_id: str,
+    *,
+    range_name: str = "latest_run",
+    limit: int = 100,
+    validate_config_user: bool = True,
+) -> list[JobResponse]:
+    if validate_config_user:
+        validate_user_id(user_id)
+    latest_run = get_latest_run(user_id, validate_config_user=validate_config_user) if range_name == "latest_run" else None
     requested_run_id = latest_run.id if latest_run else None
     with readonly_connection() as conn:
         return _select_jobs(conn, user_id=user_id, requested_run_id=requested_run_id, limit=limit)
 
 
-def get_job(user_id: str, job_id: int) -> JobResponse:
-    validate_user_id(user_id)
+def get_job(user_id: str, job_id: int, *, validate_config_user: bool = True) -> JobResponse:
+    if validate_config_user:
+        validate_user_id(user_id)
     with readonly_connection() as conn:
         jobs = _select_jobs(conn, user_id=user_id, requested_run_id=None, limit=500)
     for job in jobs:
@@ -153,8 +161,9 @@ def get_job(user_id: str, job_id: int) -> JobResponse:
     raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Job not found for selected user.")
 
 
-def set_job_status(user_id: str, job_id: int, new_status: str) -> UserJobStatusResponse:
-    validate_user_id(user_id)
+def set_job_status(user_id: str, job_id: int, new_status: str, *, validate_config_user: bool = True) -> UserJobStatusResponse:
+    if validate_config_user:
+        validate_user_id(user_id)
     if new_status not in {"new", "saved", "applied", "ignored"}:
         raise HTTPException(status_code=status.HTTP_422_UNPROCESSABLE_ENTITY, detail="Invalid status value.")
 

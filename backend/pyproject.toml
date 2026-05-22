@@ -8,10 +8,14 @@ version = "0.1.0"
 description = "Backend-only manual CLI foundation for job alert automation."
 requires-python = ">=3.11"
 dependencies = [
+  "cryptography>=42.0.0",
   "fastapi>=0.115.0",
   "google-api-python-client>=2.130.0",
+  "google-genai>=1.0.0",
   "google-auth-httplib2>=0.2.0",
   "google-auth-oauthlib>=1.2.0",
+  "pyjwt[crypto]>=2.10.1",
+  "python-multipart>=0.0.20",
   "python-dotenv>=1.0.1",
   "pyyaml>=6.0.1",
   "psycopg[binary]>=3.1.18",

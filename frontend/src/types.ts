@@ -1,4 +1,4 @@
-export type UserId = "minjian" | "chang";
+export type UserId = string;
 export type JobStatus = "new" | "saved" | "applied" | "ignored";
 export type Discovery = "new_in_this_run" | "seen_before" | "historical";
 export type Source = "LinkedIn" | "StepStone" | "Indeed";
@@ -112,6 +112,17 @@ export interface AnalysisImportResult {
   skippedCount: number;
   updatedStatusesCount: number;
   resultPath: string;
+  message: string;
+}
+
+export interface GeminiAnalysisRunResult {
+  analysisBatchId: number;
+  userId: UserId;
+  provider: "gemini" | string;
+  model: string;
+  requestedCount: number;
+  analyzedCount: number;
+  skippedCount: number;
   message: string;
 }
 

@@ -1,8 +1,8 @@
-export type AuthMode = "mock";
+export type AuthMode = "mock" | "neon";
 
-export type AuthStatus = "anonymous" | "authenticated";
+export type AuthStatus = "loading" | "anonymous" | "authenticated";
 
-export type AuthProviderId = "mock-google";
+export type AuthProviderId = "mock-google" | "neon-google";
 
 export type OnboardingStatus = "not_started" | "in_progress" | "complete";
 
@@ -28,10 +28,15 @@ export interface AuthContextValue {
   mode: AuthMode;
   status: AuthStatus;
   user: AuthUser | null;
+  ready: boolean;
+  notice: string | null;
+  errorMessage: string | null;
   authenticated: boolean;
   onboardingComplete: boolean;
   onboardingStep: number;
-  signInWithGoogle: () => void;
+  getIdentityToken: () => Promise<string | null>;
+  signInWithGoogle: () => Promise<void>;
+  signOut: () => Promise<void>;
   setOnboardingStep: (step: number) => void;
   finishOnboarding: () => void;
 }

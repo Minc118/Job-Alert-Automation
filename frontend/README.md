@@ -38,7 +38,7 @@ Important routes:
 /demo          Public mock-only dashboard preview
 ```
 
-AUTH0 exposes a future-friendly `AuthProvider` seam backed by mock Google sign-in and onboarding state in `sessionStorage` for the current browser session only.
+AUTH1 keeps the `AuthProvider` seam and uses mock Google sign-in by default. Mock sign-in and onboarding state live in `sessionStorage` for the current browser session only.
 
 You can also make it explicit:
 
@@ -89,16 +89,50 @@ In real mode, the dashboard can:
 
 It still does not call OpenAI, Gemini, Codex, or any AI API.
 
+## Neon Auth Frontend Mode
+
+AUTH1 can start app login through Neon Auth from Landing and Login pages.
+
+Configure the frontend:
+
+```bash
+cp .env.example .env
+```
+
+Set:
+
+```text
+VITE_AUTH_MODE=neon
+VITE_NEON_AUTH_URL=https://your-neon-auth-url
+```
+
+The Auth URL is frontend configuration, not `DATABASE_URL`. Configure your Neon Auth trusted origins for the local frontend origin you use, for example the Vite dev origin.
+
+For Docker Compose, put the same frontend auth variables in the repository root `.env`; Compose passes them into the frontend container.
+
+Neon Auth with AUTH3 remains staged but account-scoped:
+
+- Login identifies the app user.
+- Job preferences and onboarding completion are saved through authenticated FastAPI endpoints.
+- FastAPI `/api/me` can validate the Neon Auth JWT when backend `NEON_AUTH_JWKS_URL` is configured.
+- AUTH3 maps the Neon Auth subject to a backend-owned app profile and uses Bearer-authenticated overview/jobs/runs reads.
+- GMAIL-MU1 lets authenticated Settings start Gmail readonly OAuth, show safe connection status, and disconnect Gmail metadata through FastAPI.
+- GMAIL-MU2 lets authenticated Settings run a manual Gmail fetch and refresh dashboard data through FastAPI.
+- AI1/AI2 let authenticated Jobs selections call backend-only Gemini analysis and refresh stored results through FastAPI.
+- DOC2 lets authenticated Settings upload, activate, preview Markdown, and delete private profile/resume documents through FastAPI metadata endpoints.
+- Existing fixed `user_id` development paths remain for local compatibility, but the Neon-authenticated `/app/*` view does not expose the Minjian/Chang switcher.
+
 ## Public Flow Direction
 
 Google app login and Gmail readonly authorization stay separate:
 
-- Google login will identify the app user in later AUTH phases.
-- Gmail connection remains a later explicit job-alert mailbox authorization step.
+- Google login identifies the app user.
+- Gmail connection is an explicit job-alert mailbox authorization step through FastAPI.
+- The browser never handles legacy fixed-user token file paths such as `GOOGLE_TOKEN_*`.
 
-The detailed AUTH0 direction is documented in `../docs/auth0-auth-architecture.md`. Real Neon Auth and backend session validation stay staged for later phases.
+The detailed AUTH0-AUTH3 direction is documented in `../docs/auth0-auth-architecture.md`. Gmail fetch/ingestion, documents, and AI orchestration continue as staged backend work.
 
-Gemini analysis is a later backend-only workflow. Manual Codex prepare/import remains available through current backend paths.
+Gemini analysis is backend-only. Authenticated Jobs can run it through FastAPI; manual Codex prepare/import remains available through current backend paths.
 
 ## Docker
 
@@ -119,7 +153,9 @@ The Docker frontend service talks to the local API on port `8000`; it does not r
 The future production data path is:
 
 ```text
-React Dashboard -> Local Backend API -> Neon PostgreSQL
+React Dashboard -> FastAPI backend -> Neon PostgreSQL
 ```
 
-The manual Codex flow remains file-based: prepare analysis request, open Codex separately, save structured JSON, then import it through the backend CLI or API.
+For deployed real API mode, `VITE_API_BASE_URL` is the public FastAPI origin. The backend separately needs an explicit `API_CORS_ALLOWED_ORIGINS` allowlist for the deployed frontend origin. Do not put backend secrets into any `VITE_*` setting.
+
+The manual Codex flow remains file-based: prepare analysis request, open Codex separately, save structured JSON, then import it through the backend CLI or API. Deployment planning lives in `../docs/deployment-plan.md`.

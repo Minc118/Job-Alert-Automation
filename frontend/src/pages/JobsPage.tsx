@@ -4,7 +4,7 @@ import ImportAnalysisModal from "../components/ImportAnalysisModal";
 import JobDetailDrawer from "../components/JobDetailDrawer";
 import JobTable from "../components/JobTable";
 import PrepareAnalysisModal from "../components/PrepareAnalysisModal";
-import type { AnalysisImportResult, AnalysisRequestResult, Job, JobStatus, User } from "../types";
+import type { AnalysisImportResult, AnalysisRequestResult, GeminiAnalysisRunResult, Job, JobStatus, User } from "../types";
 import { getStatusLabel } from "../components/StatusBadge";
 
 const tabs: Array<{ value: JobFilters["status"]; label: string }> = [
@@ -22,7 +22,10 @@ export default function JobsPage({
   onImportAnalysis,
   onPrepareAnalysis,
   onRefreshData,
+  onRunGeminiAnalysis,
   onStatusChange,
+  manualAnalysisEnabled = true,
+  geminiAnalysisEnabled = false,
 }: {
   user: User;
   jobs: Job[];
@@ -30,7 +33,10 @@ export default function JobsPage({
   onImportAnalysis: (resultPath: string, overwrite: boolean) => Promise<AnalysisImportResult>;
   onPrepareAnalysis: () => Promise<AnalysisRequestResult>;
   onRefreshData: () => void | Promise<void>;
+  onRunGeminiAnalysis?: (jobIds: number[]) => Promise<GeminiAnalysisRunResult>;
   onStatusChange: (jobId: number, status: JobStatus) => void | Promise<void>;
+  manualAnalysisEnabled?: boolean;
+  geminiAnalysisEnabled?: boolean;
 }) {
   const [selectedJobId, setSelectedJobId] = useState<number | null>(jobs[0]?.id ?? null);
   const [selectedJobDetail, setSelectedJobDetail] = useState<Job | null>(jobs[0] ?? null);
@@ -42,6 +48,10 @@ export default function JobsPage({
   const [importLoading, setImportLoading] = useState(false);
   const [importError, setImportError] = useState<string | null>(null);
   const [importResult, setImportResult] = useState<AnalysisImportResult | null>(null);
+  const [selectedJobIds, setSelectedJobIds] = useState<number[]>([]);
+  const [geminiLoading, setGeminiLoading] = useState(false);
+  const [geminiError, setGeminiError] = useState<string | null>(null);
+  const [geminiResult, setGeminiResult] = useState<GeminiAnalysisRunResult | null>(null);
   const [filters, setFilters] = useState<JobFilters>({
     status: "all",
     source: "all",
@@ -57,6 +67,11 @@ export default function JobsPage({
     setSelectedJobDetail(refreshedSelection);
     setDetailError(null);
   }, [jobs, selectedJobId, user.id]);
+
+  useEffect(() => {
+    const availableJobIds = new Set(jobs.map((job) => job.id));
+    setSelectedJobIds((current) => current.filter((jobId) => availableJobIds.has(jobId)));
+  }, [jobs]);
 
   const filteredJobs = useMemo(() => {
     const query = filters.search.trim().toLowerCase();
@@ -114,6 +129,22 @@ export default function JobsPage({
     }
   }
 
+  async function runGeminiAnalysis() {
+    if (!onRunGeminiAnalysis || selectedJobIds.length === 0) {
+      setGeminiError("Select at least one job before running Gemini analysis.");
+      return;
+    }
+    setGeminiLoading(true);
+    setGeminiError(null);
+    try {
+      setGeminiResult(await onRunGeminiAnalysis(selectedJobIds));
+    } catch {
+      setGeminiError("Gemini analysis could not be completed. Check the backend API, Gemini configuration, and selected jobs.");
+    } finally {
+      setGeminiLoading(false);
+    }
+  }
+
   return (
     <main className="flex h-[calc(100vh-64px)] flex-1 flex-col gap-lg overflow-hidden p-margin_mobile pb-24 md:h-[calc(100vh-64px)] md:p-margin_desktop">
       <div className="flex shrink-0 flex-col items-start justify-between gap-4 md:flex-row md:items-center">
@@ -122,6 +153,19 @@ export default function JobsPage({
           <p className="mt-1 font-body-md text-body-md text-on-surface-variant">Reviewing potential roles for {user.displayName}.</p>
         </div>
         <div className="flex flex-wrap gap-2">
+          {geminiAnalysisEnabled ? (
+            <button
+              className="flex items-center gap-2 rounded-lg border border-outline-variant bg-surface-container-low px-4 py-2 font-label-md text-label-md text-primary transition-colors hover:bg-surface-container-high disabled:cursor-not-allowed disabled:opacity-60"
+              disabled={geminiLoading}
+              onClick={() => void runGeminiAnalysis()}
+              type="button"
+            >
+              <span className="material-symbols-outlined text-[18px]">psychology</span>
+              {geminiLoading ? "Running Gemini..." : `Run Gemini Analysis${selectedJobIds.length ? ` (${selectedJobIds.length})` : ""}`}
+            </button>
+          ) : null}
+          {manualAnalysisEnabled ? (
+            <>
           <button
             className="flex items-center gap-2 rounded-lg border border-outline-variant bg-surface-container-low px-4 py-2 font-label-md text-label-md text-primary transition-colors hover:bg-surface-container-high"
             onClick={() => setModal("prepare")}
@@ -138,6 +182,8 @@ export default function JobsPage({
             <span className="material-symbols-outlined text-[18px]">upload</span>
             Import Analysis Result
           </button>
+            </>
+          ) : null}
           <button
             className="flex items-center gap-2 rounded-lg bg-primary-container px-4 py-2 font-label-md text-label-md text-on-primary transition-opacity hover:opacity-90"
             onClick={() => void onRefreshData()}
@@ -171,8 +217,10 @@ export default function JobsPage({
           <JobTable
             jobs={filteredJobs}
             onSelectJob={selectJob}
+            onSelectionChange={setSelectedJobIds}
             onStatusChange={changeStatus}
             selectedJobId={selectedJob?.id ?? null}
+            selectedJobIds={selectedJobIds}
           />
           <div className="border-t border-surface-variant bg-surface-bright px-4 py-2 font-label-sm text-label-sm text-on-surface-variant lg:hidden">
             Tap a row to select it. The detail drawer is shown on desktop width.
@@ -183,6 +231,16 @@ export default function JobsPage({
       {detailError ? (
         <div className="rounded-lg border border-error-container bg-surface-container-lowest px-4 py-2 font-body-md text-body-md text-on-error-container">
           {detailError}
+        </div>
+      ) : null}
+      {geminiError ? (
+        <div className="rounded-lg border border-error-container bg-surface-container-lowest px-4 py-2 font-body-md text-body-md text-on-error-container">
+          {geminiError}
+        </div>
+      ) : null}
+      {geminiResult ? (
+        <div className="rounded-lg border border-secondary-container bg-surface-container-lowest px-4 py-2 font-body-md text-body-md text-on-secondary-container">
+          Gemini analysis stored for {geminiResult.analyzedCount} job{geminiResult.analyzedCount === 1 ? "" : "s"} in batch {geminiResult.analysisBatchId}.
         </div>
       ) : null}
       {selectedJob ? (

@@ -12,12 +12,16 @@ function priorityDot(priority?: string) {
 export default function JobRow({
   job,
   selected,
+  checked,
   onSelect,
+  onCheckedChange,
   onStatusChange,
 }: {
   job: Job;
   selected: boolean;
+  checked: boolean;
   onSelect: () => void;
+  onCheckedChange: (jobId: number, checked: boolean) => void;
   onStatusChange: (jobId: number, status: JobStatus) => void | Promise<void>;
 }) {
   const priority = job.codexAnalysis?.priority ?? "Not analyzed";
@@ -35,7 +39,14 @@ export default function JobRow({
       onClick={onSelect}
     >
       <td className="p-3">
-        <input className="h-4 w-4 rounded border-outline-variant text-primary focus:ring-primary" type="checkbox" />
+        <input
+          aria-label={`Select ${job.title}`}
+          checked={checked}
+          className="h-4 w-4 rounded border-outline-variant text-primary focus:ring-primary"
+          onChange={(event) => onCheckedChange(job.id, event.currentTarget.checked)}
+          onClick={(event) => event.stopPropagation()}
+          type="checkbox"
+        />
       </td>
       <td className="p-3">
         <DiscoveryBadge discovery={job.discovery} />
