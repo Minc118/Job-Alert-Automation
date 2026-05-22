@@ -454,6 +454,23 @@ def create_analysis_batch(
     )
 
 
+def create_runtime_analysis_batch(
+    conn,
+    *,
+    user_id: str,
+    job_count: int,
+) -> int:
+    return _fetchone_id(
+        conn,
+        """
+        INSERT INTO analysis_batches (user_id, job_count, status)
+        VALUES (%s, %s, 'running')
+        RETURNING id
+        """,
+        (user_id, job_count),
+    )
+
+
 def job_exists_for_user(conn, *, user_id: str, job_id: int) -> bool:
     return (
         conn.execute(
@@ -500,14 +517,15 @@ def insert_analysis(
     suggested_status: str | None,
     analysis_batch_id: int | None,
     source_file: str,
+    provider: str = "codex",
 ) -> None:
     conn.execute(
         """
         INSERT INTO codex_job_analyses (
             user_id, job_id, analysis_batch_id, score, priority, reason,
-            concern, suggested_status, source_file
+            concern, suggested_status, source_file, provider
         )
-        VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s)
+        VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
         """,
         (
             user_id,
@@ -519,6 +537,7 @@ def insert_analysis(
             concern,
             suggested_status,
             source_file,
+            provider,
         ),
     )
 
@@ -544,4 +563,26 @@ def mark_analysis_batch_imported(conn, *, analysis_batch_id: int, result_json_pa
         WHERE id = %s
         """,
         (result_json_path, analysis_batch_id),
+    )
+
+
+def mark_analysis_batch_completed(conn, *, analysis_batch_id: int) -> None:
+    conn.execute(
+        """
+        UPDATE analysis_batches
+        SET status = 'completed', imported_at = now(), error_message = NULL
+        WHERE id = %s
+        """,
+        (analysis_batch_id,),
+    )
+
+
+def mark_analysis_batch_failed(conn, *, analysis_batch_id: int, error_message: str) -> None:
+    conn.execute(
+        """
+        UPDATE analysis_batches
+        SET status = 'failed', error_message = %s
+        WHERE id = %s
+        """,
+        (error_message[:1000], analysis_batch_id),
     )

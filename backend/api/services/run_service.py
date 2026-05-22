@@ -27,8 +27,9 @@ def _row_to_run(row: Any, user_id: str) -> IngestionRunResponse:
     )
 
 
-def list_runs(user_id: str, *, limit: int = 20) -> list[IngestionRunResponse]:
-    validate_user_id(user_id)
+def list_runs(user_id: str, *, limit: int = 20, validate_config_user: bool = True) -> list[IngestionRunResponse]:
+    if validate_config_user:
+        validate_user_id(user_id)
     with readonly_connection() as conn:
         rows = conn.execute(
             """
@@ -60,6 +61,6 @@ def list_runs(user_id: str, *, limit: int = 20) -> list[IngestionRunResponse]:
     return [_row_to_run(row, user_id) for row in rows]
 
 
-def get_latest_run(user_id: str) -> IngestionRunResponse | None:
-    runs = list_runs(user_id, limit=1)
+def get_latest_run(user_id: str, *, validate_config_user: bool = True) -> IngestionRunResponse | None:
+    runs = list_runs(user_id, limit=1, validate_config_user=validate_config_user)
     return runs[0] if runs else None

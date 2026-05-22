@@ -9,7 +9,14 @@ from job_alert_automation.migrations import MIGRATIONS_DIR, MigrationResult, lis
 def test_migration_sql_files_are_discoverable() -> None:
     files = list_migration_files()
 
-    assert [path.name for path in files] == ["001_initial_schema.sql", "002_analysis_and_batches.sql"]
+    assert [path.name for path in files] == [
+        "001_initial_schema.sql",
+        "002_analysis_and_batches.sql",
+        "003_auth_profiles.sql",
+        "004_gmail_oauth_connections.sql",
+        "005_ai_analysis_provider.sql",
+        "006_user_documents.sql",
+    ]
 
 
 def test_migration_sql_files_are_ordered(tmp_path: Path) -> None:
@@ -40,6 +47,38 @@ def test_analysis_and_batches_migration_exists() -> None:
     assert "CREATE TABLE IF NOT EXISTS codex_job_analyses" in sql
     assert "first_seen_run_id" in sql
     assert "last_seen_run_id" in sql
+
+
+def test_auth_profiles_migration_exists() -> None:
+    sql = (MIGRATIONS_DIR / "003_auth_profiles.sql").read_text(encoding="utf-8")
+
+    assert "CREATE TABLE IF NOT EXISTS app_user_profiles" in sql
+    assert "auth_subject text PRIMARY KEY" in sql
+    assert "user_id text NOT NULL UNIQUE REFERENCES app_users(id)" in sql
+
+
+def test_gmail_oauth_connections_migration_exists() -> None:
+    sql = (MIGRATIONS_DIR / "004_gmail_oauth_connections.sql").read_text(encoding="utf-8")
+
+    assert "CREATE TABLE IF NOT EXISTS gmail_oauth_connections" in sql
+    assert "encrypted_credentials text NOT NULL" in sql
+    assert "scope text NOT NULL DEFAULT 'https://www.googleapis.com/auth/gmail.readonly'" in sql
+    assert "user_id text PRIMARY KEY REFERENCES app_users(id)" in sql
+
+
+def test_ai_analysis_provider_migration_exists() -> None:
+    sql = (MIGRATIONS_DIR / "005_ai_analysis_provider.sql").read_text(encoding="utf-8")
+
+    assert "ADD COLUMN IF NOT EXISTS provider text NOT NULL DEFAULT 'codex'" in sql
+    assert "codex_job_analyses_provider_idx" in sql
+
+
+def test_user_documents_migration_exists() -> None:
+    sql = (MIGRATIONS_DIR / "006_user_documents.sql").read_text(encoding="utf-8")
+
+    assert "CREATE TABLE IF NOT EXISTS user_documents" in sql
+    assert "document_type IN ('profile_markdown', 'resume_pdf', 'cover_letter_template')" in sql
+    assert "stored_path text NOT NULL" in sql
 
 
 def test_migrate_dispatches_manual_migration(monkeypatch) -> None:

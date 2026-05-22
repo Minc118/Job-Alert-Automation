@@ -69,9 +69,11 @@ export default function PublicLandingPage() {
   const auth = useAuth();
   const navigate = useNavigate();
 
-  function beginMockSignIn() {
-    auth.signInWithGoogle();
-    navigate("/onboarding");
+  async function beginSignIn() {
+    await auth.signInWithGoogle();
+    if (auth.mode === "mock") {
+      navigate("/onboarding");
+    }
   }
 
   return (
@@ -94,7 +96,7 @@ export default function PublicLandingPage() {
             </Link>
             <button
               className="flex items-center gap-xs rounded bg-primary-container px-md py-sm font-label-md text-label-md text-on-primary transition-opacity hover:opacity-90"
-              onClick={beginMockSignIn}
+              onClick={() => void beginSignIn()}
               type="button"
             >
               <span className="material-symbols-outlined text-[18px]">login</span>
@@ -112,10 +114,11 @@ export default function PublicLandingPage() {
           <p className="mb-xl max-w-2xl font-body-lg text-body-lg text-on-surface-variant">
             Collect job alert emails, analyze roles, and track application decisions in one calm dashboard.
           </p>
-          <PublicActionButtons onGoogle={beginMockSignIn} />
+          <PublicActionButtons onGoogle={() => void beginSignIn()} />
           <p className="mt-sm font-label-sm text-label-sm text-on-surface-variant opacity-70">
             Gmail access is connected separately after login.
           </p>
+          {auth.notice ? <p className="mt-sm rounded bg-surface-container-low px-md py-sm font-label-sm text-label-sm text-on-surface-variant">{auth.notice}</p> : null}
         </section>
 
         <section className="mx-auto w-full max-w-6xl px-margin_mobile pb-24 md:px-margin_desktop">
@@ -222,7 +225,7 @@ export default function PublicLandingPage() {
 
         <section className="mx-auto flex w-full max-w-3xl flex-col items-center px-margin_mobile py-24 text-center md:px-margin_desktop">
           <h2 className="mb-lg font-display-lg text-display-lg text-primary">Start with your existing job alerts.</h2>
-          <PublicActionButtons onGoogle={beginMockSignIn} />
+          <PublicActionButtons onGoogle={() => void beginSignIn()} />
           <p className="mt-md font-body-md text-body-md text-on-surface-variant">No email/password account required.</p>
         </section>
       </main>

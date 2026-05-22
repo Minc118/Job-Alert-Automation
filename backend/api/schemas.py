@@ -21,6 +21,90 @@ class UserResponse(ApiModel):
     displayName: str
 
 
+class UserPreferencesResponse(ApiModel):
+    userId: str
+    targetRoleKeywords: list[str]
+    preferredLocations: list[str]
+    excludedKeywords: list[str]
+    sourceQueries: dict[str, str]
+
+
+class UserPreferencesUpdate(ApiModel):
+    targetRoleKeywords: list[str]
+    preferredLocations: list[str]
+    excludedKeywords: list[str]
+
+
+class AppUserProfileResponse(ApiModel):
+    id: str
+    displayName: str
+
+
+class AuthenticatedUserResponse(ApiModel):
+    subject: str
+    displayName: str | None = None
+    email: str | None = None
+
+
+class MeResponse(ApiModel):
+    authenticated: bool
+    authProvider: str
+    user: AuthenticatedUserResponse
+    appUser: AppUserProfileResponse
+    accountDataReady: bool
+    onboardingComplete: bool
+
+
+class OnboardingCompleteResponse(ApiModel):
+    userId: str
+    onboardingComplete: bool
+
+
+class GmailConnectionStatusResponse(ApiModel):
+    status: str
+    connectedEmail: str | None = None
+    lastFetchAt: str | None = None
+    scope: str
+    detectedSources: list[str]
+
+
+class GmailConnectResponse(ApiModel):
+    authorizationUrl: str
+
+
+class GmailFetchResponse(ApiModel):
+    ingestionRunId: int
+    emailsFetched: int
+    jobsParsed: int
+    uniqueJobs: int
+    newlyDiscovered: int
+    seenAgain: int
+    likelyRelevant: int
+
+
+class UserDocumentResponse(ApiModel):
+    id: int
+    userId: str
+    documentType: Literal["profile_markdown", "resume_pdf", "cover_letter_template"]
+    originalFilename: str
+    mimeType: str | None = None
+    fileSizeBytes: int | None = None
+    isActive: bool
+    createdAt: str
+
+
+class UserDocumentPreviewResponse(ApiModel):
+    documentId: int
+    documentType: Literal["profile_markdown", "cover_letter_template"]
+    content: str
+    truncated: bool
+
+
+class UserDocumentDeleteResponse(ApiModel):
+    documentId: int
+    deleted: bool
+
+
 class CodexJobAnalysisResponse(ApiModel):
     score: float | None
     priority: str
@@ -53,7 +137,7 @@ class JobResponse(ApiModel):
 
 
 class UserJobStatusUpdate(ApiModel):
-    userId: str
+    userId: str | None = None
     status: JobStatus
 
 
@@ -118,4 +202,19 @@ class AnalysisImportResponse(ApiModel):
     skippedCount: int
     updatedStatusesCount: int
     resultPath: str
+    message: str
+
+
+class AnalysisRunCreate(ApiModel):
+    jobIds: list[int]
+
+
+class AnalysisRunResponse(ApiModel):
+    analysisBatchId: int
+    userId: str
+    provider: str
+    model: str
+    requestedCount: int
+    analyzedCount: int
+    skippedCount: int
     message: str

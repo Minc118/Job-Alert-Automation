@@ -16,7 +16,7 @@ Mock-gated app routes:
 - `/app/jobs`: jobs workspace
 - `/app/settings`: settings workspace
 
-AUTH0 uses `AuthProvider`, `AuthGate`, and versioned `sessionStorage` mock auth/onboarding state. Real authentication and backend session validation are deferred.
+`AuthProvider` and `AuthGate` remain the route boundary. `AuthProvider` chooses mock mode by default or Neon Auth frontend mode when configured. AUTH2/AUTH3 add FastAPI JWT validation and app-profile mapping for authenticated dashboard reads.
 
 ## Pages
 
@@ -31,7 +31,7 @@ AUTH0 uses `AuthProvider`, `AuthGate`, and versioned `sessionStorage` mock auth/
 
 - Router root in `App`
 - `DashboardApp` for `/app/*` and `/demo/*`
-- `AuthProvider` and `useAuth` seam for the current mock session model and future auth providers
+- `AuthProvider` and `useAuth` seam for mock auth or configured Neon Auth frontend state
 - `AuthGate`
 - `AppShell`
 - `Sidebar`
@@ -40,6 +40,8 @@ AUTH0 uses `AuthProvider`, `AuthGate`, and versioned `sessionStorage` mock auth/
 - Drawer and modal primitives
 
 Demo mode must always select mock clients and data. App mode may use configured mock or real API clients.
+
+When `/app/*` is backed by a real Neon frontend session, the app shell shows the signed-in account boundary, hides the fixed development user switcher, and uses Bearer-authenticated overview/jobs/runs reads through the mapped app profile.
 
 ## Shared Components
 
@@ -78,7 +80,7 @@ Frontend models include:
 - `UserDocument`
 - `DataSourceStatus`
 
-AUTH0 auth models include safe mock session state and onboarding progress. Future auth-backed models add backend session identity, Gmail connection state, and Gemini analysis batch metadata without exposing secrets.
+Auth models include safe frontend Neon Auth state, `/api/me` app profile metadata, and temporary browser-session onboarding progress. Future auth-backed models add Gmail connection state and Gemini analysis batch metadata without exposing secrets.
 
 ## Backend Data Requirements
 

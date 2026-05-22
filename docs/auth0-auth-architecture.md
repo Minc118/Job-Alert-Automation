@@ -15,7 +15,7 @@ AUTH0 does not include:
 
 - Real Neon Auth setup.
 - Google OAuth callbacks.
-- Backend `/api/me` runtime implementation.
+- Backend `/api/me` runtime implementation, which now lands separately in AUTH2.
 - Gmail OAuth connection.
 - Gemini runtime analysis.
 - Auth migrations or destructive data changes.
@@ -40,6 +40,43 @@ Current browser state is intentionally mock-only:
 - `/demo/*` remains public and uses mock dashboard data even if dashboard API mode is real.
 
 The provider name and storage format are not a security boundary. AUTH1 should replace the mock provider behavior with Neon Auth frontend state without making public pages or dashboard routes depend on Neon directly.
+
+## AUTH1 Frontend Foundation
+
+AUTH1 now adds the first frontend implementation behind the AUTH0 seam:
+
+- Default frontend auth mode remains `mock`.
+- `VITE_AUTH_MODE=neon` plus public `VITE_NEON_AUTH_URL` enables Neon Auth Google sign-in.
+- Landing and login Google actions start app authentication through Neon Auth in neon mode.
+- Frontend onboarding progress remains session-only until backend `/api/me` and setup readiness are implemented.
+
+AUTH1 alone is not backend trust. Current dashboard APIs still use the existing development-mode user selection until AUTH2/AUTH3 add server-side session validation and ownership mapping.
+
+## AUTH2 Backend Identity Check
+
+AUTH2 adds the first backend trust boundary:
+
+- Frontend Neon Auth mode sends a Neon Auth JWT to FastAPI `/api/me`.
+- FastAPI validates the token signature and expiry against backend-only `NEON_AUTH_JWKS_URL`.
+- `/api/me` returns safe subject/display metadata and explicitly marks account data as not ready.
+- Existing jobs, runs, analyses, documents, and preferences are not returned from fixed-user endpoints for the authenticated Google account until AUTH3 maps ownership.
+
+## AUTH3 App Profile Mapping
+
+AUTH3 adds an additive `app_user_profiles` mapping:
+
+- `auth_subject` is the Neon Auth identity boundary.
+- `user_id` points to a backend-owned `app_users` row used by jobs, runs, analyses, documents, and preferences.
+- `/api/me` provisions an empty auth-backed app user/profile when a valid Neon Auth subject first reaches FastAPI.
+- Authenticated overview/jobs/runs reads omit browser-supplied `user_id`; FastAPI derives the app user from the JWT subject.
+- Fixed `minjian` and `chang` development paths remain available for current CLI and compatibility workflows.
+
+ONBOARD1 uses that mapping for the first persisted setup state:
+
+- authenticated `GET/PATCH /api/user/preferences`
+- authenticated `POST /api/onboarding/complete`
+- backend stored target roles, preferred locations, and excluded keywords
+- backend stored onboarding completion on `app_user_profiles`
 
 ## Target Authentication Boundary
 
@@ -79,14 +116,14 @@ A future additive profile/mapping table is preferable to reinterpreting existing
 
 ## Backend Session Direction
 
-`GET /api/me` is the first target session endpoint. It should return only safe session metadata:
+`GET /api/me` is the first implemented session endpoint. It returns only safe session metadata:
 
 - authenticated app user id
 - display name
 - onboarding completion/readiness
 - allowed frontend feature state
 
-Backend endpoints that operate on owned data should move from caller-trusted `user_id` parameters toward session-derived identity as AUTH2 and AUTH3 land.
+AUTH3 moves the first read endpoints toward session-derived ownership. Preferences, documents, Gmail connection, analysis orchestration, and broader mutation hardening continue in staged work.
 
 ## Security Invariants
 

@@ -244,8 +244,23 @@ def fetch_recent_alert_content(
     credentials = load_authorized_credentials(user_id)
     service = build_gmail_service(credentials)
 
+    return fetch_alert_content_with_service(
+        service,
+        user_id=user_id,
+        source_queries=preferences.source_queries,
+        max_results_per_source=max_results_per_source,
+    )
+
+
+def fetch_alert_content_with_service(
+    service: Any,
+    *,
+    user_id: str,
+    source_queries: dict[str, str],
+    max_results_per_source: int = 10,
+) -> list[EmailMessageContent]:
     messages: list[EmailMessageContent] = []
-    for source, query in preferences.source_queries.items():
+    for source, query in source_queries.items():
         for listed_message in list_message_ids(service, query=query, max_results=max_results_per_source):
             messages.append(
                 get_message_content(

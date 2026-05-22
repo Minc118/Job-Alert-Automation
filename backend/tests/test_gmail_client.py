@@ -6,6 +6,7 @@ from job_alert_automation.gmail_client import (
     GMAIL_READONLY_SCOPE,
     GMAIL_SCOPES,
     _parse_header_datetime,
+    fetch_alert_content_with_service,
     get_message_content,
     load_gmail_oauth_settings,
 )
@@ -54,6 +55,9 @@ class _FakeMessages:
         self.get_calls.append(kwargs)
         return _FakeExecute(self.response)
 
+    def list(self, **kwargs):
+        return _FakeExecute({"messages": [{"id": "msg-1"}]})
+
 
 class _FakeUsers:
     def __init__(self, messages):
@@ -99,3 +103,30 @@ def test_get_message_content_uses_full_format_and_extracts_safe_metadata() -> No
     assert content.metadata.subject == "Job alert"
     assert content.text_body == "Hello Berlin"
     assert content.body_hash
+
+
+def test_fetch_alert_content_with_service_uses_explicit_web_queries() -> None:
+    import base64
+
+    encoded_body = base64.urlsafe_b64encode(b"Title: Werkstudent AI").decode("ascii").rstrip("=")
+    service = _FakeService(
+        {
+            "id": "msg-1",
+            "payload": {
+                "headers": [],
+                "mimeType": "text/plain",
+                "body": {"data": encoded_body},
+            },
+        }
+    )
+
+    contents = fetch_alert_content_with_service(
+        service,
+        user_id="auth_profile_123",
+        source_queries={"linkedin": "from:(linkedin) newer_than:7d"},
+        max_results_per_source=3,
+    )
+
+    assert len(contents) == 1
+    assert contents[0].metadata.user_id == "auth_profile_123"
+    assert contents[0].metadata.source == "linkedin"
