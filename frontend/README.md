@@ -139,16 +139,16 @@ Gemini analysis is backend-only. Authenticated Jobs can run it through FastAPI; 
 From the repository root:
 
 ```bash
-VITE_API_MODE=real VITE_API_BASE_URL=http://127.0.0.1:8000 docker compose up api frontend
+VITE_API_MODE=real VITE_API_BASE_URL=http://localhost:8000 docker compose up api frontend
 ```
 
 Then open:
 
 ```text
-http://127.0.0.1:5173
+http://localhost:5173
 ```
 
-The Docker frontend service talks to the local API on port `8000`; it does not receive Neon credentials.
+The Docker frontend service talks to the local API on port `8000`; it does not receive Neon credentials. Keep the frontend origin consistent for local Neon Auth; use `http://localhost:5173` with `FRONTEND_BASE_URL=http://localhost:5173` before testing Gmail OAuth.
 
 The future production data path is:
 

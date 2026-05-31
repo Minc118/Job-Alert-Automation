@@ -31,6 +31,8 @@ GMAIL_TOKEN_ENCRYPTION_KEY
 
 The Settings UI receives status metadata only. Gmail OAuth client secrets and encrypted Google credentials stay on the backend side.
 
+For local Neon Auth and Gmail OAuth together, keep the post-Gmail frontend redirect on the same origin used for sign-in. The recommended local value is `FRONTEND_BASE_URL=http://localhost:5173`; `GMAIL_OAUTH_REDIRECT_URI` must exactly match a redirect URI registered in the Google OAuth client.
+
 `GOOGLE_TOKEN_MINJIAN` and `GOOGLE_TOKEN_CHANG` remain legacy fixed-user CLI token paths. The web multi-user Gmail path does not add one token env variable per app user.
 
 GMAIL-MU2 adds an authenticated manual fetch endpoint at `POST /api/gmail/fetch`. It reuses the existing parser, dedupe, relevance filter, and ingestion batch persistence path; it does not add scheduling.

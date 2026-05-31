@@ -60,13 +60,13 @@ def _fernet() -> Fernet:
 
 def get_redirect_uri() -> str:
     try:
-        return get_env_value("GMAIL_OAUTH_REDIRECT_URI", default="http://127.0.0.1:8000/api/gmail/callback")
+        return get_env_value("GMAIL_OAUTH_REDIRECT_URI", default="http://localhost:8000/api/gmail/callback")
     except ConfigError as exc:
         raise HTTPException(status_code=status.HTTP_503_SERVICE_UNAVAILABLE, detail=SAFE_GMAIL_CONFIG_ERROR) from exc
 
 
 def _frontend_settings_redirect(outcome: str) -> str:
-    frontend_base_url = get_env_value("FRONTEND_BASE_URL", default="http://127.0.0.1:5173").rstrip("/")
+    frontend_base_url = get_env_value("FRONTEND_BASE_URL", default="http://localhost:5173").rstrip("/")
     return f"{frontend_base_url}/app/settings?{urlencode({'gmail': outcome})}"
 
 
