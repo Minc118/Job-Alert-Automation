@@ -1,7 +1,7 @@
 import { dataSources, documents, preferences } from "../data/mockData";
 import type { AnalysisImportResult, AnalysisRequestResult, DataSourceStatus, IngestionRun, Job, OverviewData, User, UserDocument, UserId, UserPreferences } from "../types";
 
-const API_BASE_URL = (import.meta.env.VITE_API_BASE_URL || "http://127.0.0.1:8000").replace(/\/$/, "");
+const API_BASE_URL = (import.meta.env.VITE_API_BASE_URL || "http://localhost:8000").replace(/\/$/, "");
 
 async function getJson<T>(path: string): Promise<T> {
   const response = await fetch(`${API_BASE_URL}/api${path}`, {

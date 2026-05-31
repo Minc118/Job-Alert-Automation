@@ -185,7 +185,7 @@ docker compose up api
 Run the frontend against the Docker API:
 
 ```bash
-VITE_API_MODE=real VITE_API_BASE_URL=http://127.0.0.1:8000 docker compose up frontend
+VITE_API_MODE=real VITE_API_BASE_URL=http://localhost:8000 docker compose up frontend
 ```
 
 Docker Compose also reads root `.env` for frontend app auth configuration:
@@ -203,16 +203,18 @@ API_CORS_ALLOWED_ORIGINS=...
 
 `VITE_NEON_AUTH_URL` is the public Neon Auth URL. `NEON_AUTH_JWKS_URL` is used by FastAPI to verify the JWT sent to `/api/me`. Gmail web OAuth redirect/state/encryption settings stay backend-only. None of these values is `DATABASE_URL`.
 
+For local Neon Auth, open the frontend through one consistent origin. The recommended local origin is `http://localhost:5173`; set `FRONTEND_BASE_URL` to that same frontend origin before using Gmail OAuth. `GMAIL_OAUTH_REDIRECT_URI` must exactly match a redirect URI registered in the Google OAuth client.
+
 Or start both API and frontend:
 
 ```bash
-VITE_API_MODE=real VITE_API_BASE_URL=http://127.0.0.1:8000 docker compose up api frontend
+VITE_API_MODE=real VITE_API_BASE_URL=http://localhost:8000 docker compose up api frontend
 ```
 
 Open:
 
 ```text
-http://127.0.0.1:5173
+http://localhost:5173
 ```
 
 The frontend still talks only to the local API. It never receives `DATABASE_URL`.

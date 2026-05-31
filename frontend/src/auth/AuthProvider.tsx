@@ -148,13 +148,17 @@ function NeonAuthProvider({ children }: { children: ReactNode }) {
   const neonSession = neonAuthClient!.useSession();
   const [signInError, setSignInError] = useState<string | null>(null);
   const neonUser = neonSession.data?.user;
-  const user = neonUser
-    ? {
-        id: neonUser.id,
-        displayName: neonUser.name || neonUser.email,
-        provider: "neon-google" as const,
-      }
-    : null;
+  const user = useMemo(
+    () =>
+      neonUser
+        ? {
+            id: neonUser.id,
+            displayName: neonUser.name || neonUser.email,
+            provider: "neon-google" as const,
+          }
+        : null,
+    [neonUser?.email, neonUser?.id, neonUser?.name],
+  );
   const [onboarding, setOnboarding] = useState(() => (user ? readOnboardingState(user.id) : anonymousSession.onboarding));
 
   useEffect(() => {

@@ -1,6 +1,8 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
+from functools import lru_cache
+import hashlib
 from typing import Any
 
 import jwt
@@ -11,7 +13,6 @@ from jwt.exceptions import PyJWKClientError
 from api.schemas import AppUserProfileResponse
 from api.services.database import readonly_connection, write_connection
 from job_alert_automation.config import ConfigError, get_env_value
-import hashlib
 
 
 SAFE_AUTH_CONFIG_ERROR = "Neon Auth verification is not configured. Add NEON_AUTH_JWKS_URL to the local .env file."
@@ -48,6 +49,13 @@ def require_neon_auth_jwks_url() -> str:
         raise HTTPException(status_code=status.HTTP_503_SERVICE_UNAVAILABLE, detail=SAFE_AUTH_CONFIG_ERROR) from exc
 
 
+@lru_cache(maxsize=4)
+def _jwks_client(jwks_url: str) -> PyJWKClient:
+    # PyJWKClient caches fetched keys; keep it across requests so protected API
+    # calls do not refetch Neon JWKS for every dashboard request.
+    return PyJWKClient(jwks_url)
+
+
 def verify_neon_auth_jwt(token: str) -> VerifiedIdentity:
     jwks_url = require_neon_auth_jwks_url()
     try:
@@ -56,8 +64,16 @@ def verify_neon_auth_jwt(token: str) -> VerifiedIdentity:
         if algorithm not in ALLOWED_JWT_ALGORITHMS:
             raise InvalidTokenError("Unsupported JWT algorithm.")
 
-        signing_key = PyJWKClient(jwks_url).get_signing_key_from_jwt(token)
-        payload = jwt.decode(token, signing_key.key, algorithms=[algorithm])
+        signing_key = _jwks_client(jwks_url).get_signing_key_from_jwt(token)
+        payload = jwt.decode(
+            token,
+            signing_key.key,
+            algorithms=[algorithm],
+            # Neon Auth JWTs can carry an audience for Data API/RLS use. This API
+            # trusts the configured Neon JWKS and does not have a separate audience
+            # value to validate yet.
+            options={"verify_aud": False},
+        )
     except PyJWKClientError as exc:
         raise HTTPException(status_code=status.HTTP_503_SERVICE_UNAVAILABLE, detail=SAFE_AUTH_UNAVAILABLE_ERROR) from exc
     except InvalidTokenError as exc:

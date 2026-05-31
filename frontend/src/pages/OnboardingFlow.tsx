@@ -3,6 +3,7 @@ import { Link, useNavigate } from "react-router-dom";
 import {
   completeAuthenticatedOnboarding,
   getAuthenticatedPreferences,
+  startAuthenticatedGmailConnect,
   updateAuthenticatedPreferences,
 } from "../api/authApi";
 import { useAuth } from "../auth/AuthProvider";
@@ -26,10 +27,18 @@ function StepBody({
   step,
   preferenceText,
   onPreferenceTextChange,
+  gmailConnectEnabled,
+  gmailConnecting,
+  gmailNotice,
+  onConnectGmail,
 }: {
   step: number;
   preferenceText: typeof defaultPreferenceText;
   onPreferenceTextChange: (field: keyof typeof defaultPreferenceText, value: string) => void;
+  gmailConnectEnabled: boolean;
+  gmailConnecting: boolean;
+  gmailNotice: string | null;
+  onConnectGmail: () => void;
 }) {
   if (step === 0) {
     return (
@@ -77,10 +86,24 @@ function StepBody({
         <p className="max-w-lg font-body-lg text-body-lg text-on-surface-variant">
           Google login does not grant email access. Gmail connection will request readonly permission for job alert messages from LinkedIn, StepStone, and Indeed.
         </p>
-        <button className="rounded-lg bg-primary-container px-lg py-md font-label-md text-label-md text-on-primary opacity-80" type="button">
-          Connect Gmail
+        <button
+          className="rounded-lg bg-primary-container px-lg py-md font-label-md text-label-md text-on-primary transition-opacity hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-50"
+          disabled={!gmailConnectEnabled || gmailConnecting}
+          onClick={onConnectGmail}
+          type="button"
+        >
+          {gmailConnecting ? "Starting Gmail..." : "Connect Gmail"}
         </button>
-        <p className="font-label-sm text-label-sm text-outline">Mock onboarding step only. Scope planned: gmail.readonly.</p>
+        <p className="font-label-sm text-label-sm text-outline">
+          {gmailConnectEnabled
+            ? "The backend starts Gmail OAuth with gmail.readonly scope."
+            : "Mock onboarding keeps Gmail authorization UI-only."}
+        </p>
+        {gmailNotice ? (
+          <p className="max-w-lg rounded-lg border border-error-container bg-surface px-md py-sm font-body-md text-body-md text-on-error-container">
+            {gmailNotice}
+          </p>
+        ) : null}
       </>
     );
   }
@@ -134,6 +157,8 @@ export default function OnboardingFlow() {
   const [preferenceText, setPreferenceText] = useState(defaultPreferenceText);
   const [saving, setSaving] = useState(false);
   const [saveError, setSaveError] = useState<string | null>(null);
+  const [gmailConnecting, setGmailConnecting] = useState(false);
+  const [gmailNotice, setGmailNotice] = useState<string | null>(null);
 
   useEffect(() => {
     let active = true;
@@ -170,6 +195,21 @@ export default function OnboardingFlow() {
       preferredLocations: splitTerms(preferenceText.preferredLocations),
       excludedKeywords: splitTerms(preferenceText.excludedKeywords),
     });
+  }
+
+  async function connectGmail() {
+    if (auth.mode !== "neon") return;
+    setGmailConnecting(true);
+    setGmailNotice(null);
+    try {
+      const token = await auth.getIdentityToken();
+      if (!token) throw new Error("Missing identity token.");
+      const { authorizationUrl } = await startAuthenticatedGmailConnect(token);
+      window.location.assign(authorizationUrl);
+    } catch {
+      setGmailNotice("Gmail connection could not be started. Check the local API and Gmail OAuth configuration.");
+      setGmailConnecting(false);
+    }
   }
 
   async function goForward() {
@@ -221,11 +261,15 @@ export default function OnboardingFlow() {
             onPreferenceTextChange={(field, value) => setPreferenceText((current) => ({ ...current, [field]: value }))}
             preferenceText={preferenceText}
             step={step}
+            gmailConnectEnabled={auth.mode === "neon" && auth.authenticated}
+            gmailConnecting={gmailConnecting}
+            gmailNotice={gmailNotice}
+            onConnectGmail={() => void connectGmail()}
           />
         </div>
         <p className="z-10 font-label-sm text-label-sm text-outline">
           {auth.mode === "neon"
-            ? "Preferences and setup completion are saved through the local API. Gmail and file upload steps remain staged."
+            ? "Preferences and setup completion are saved through the local API. Gmail readonly connect can start here; document uploads stay in Settings."
             : "Mock setup state is stored for this browser session only until real Google auth and backend onboarding state are added."}
         </p>
         {saveError ? (
