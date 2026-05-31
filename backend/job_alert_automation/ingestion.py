@@ -1,10 +1,11 @@
 from __future__ import annotations
 
 from collections.abc import Callable
+from collections import Counter
 
 from .database import connect
 from .dedupe import dedupe_jobs
-from .email_parser import parse_email_contents
+from .email_parser import parse_email_content
 from .filters import evaluate_jobs_relevance
 from .gmail_client import fetch_recent_alert_content
 from .models import EmailMessageContent, UserPreferences
@@ -44,8 +45,25 @@ def run_ingestion_with_fetch(
         ingestion_run_id = create_ingestion_run(conn, selected_user_id=user_id, mode=mode)
         try:
             contents = fetch_contents()
-            parsed_jobs = parse_email_contents(contents)
+            parsed_jobs = []
+            parser_skipped_count = 0
+            warnings: list[str] = []
+            source_counts = Counter(
+                str(content.metadata.source or "unknown")
+                for content in contents
+            )
+            for content in contents:
+                try:
+                    parsed_jobs.extend(parse_email_content(content))
+                except Exception:
+                    parser_skipped_count += 1
+            if parser_skipped_count:
+                warnings.append(f"Skipped {parser_skipped_count} message(s) because parsing failed.")
+
             unique_jobs, _dedupe_summary = dedupe_jobs(parsed_jobs)
+            duplicate_count = len(parsed_jobs) - len(unique_jobs)
+            if duplicate_count:
+                warnings.append(f"Skipped {duplicate_count} duplicate job(s).")
             results = evaluate_jobs_relevance(unique_jobs, preferences)
 
             new_count = 0
@@ -75,6 +93,9 @@ def run_ingestion_with_fetch(
                 new_count=new_count,
                 seen_again_count=len(results) - new_count,
                 likely_relevant_count=likely_count,
+                skipped_count=parser_skipped_count + duplicate_count,
+                source_counts=dict(source_counts),
+                warnings=tuple(warnings),
             )
             complete_ingestion_run(conn, ingestion_run_id=ingestion_run_id, summary=summary)
             conn.commit()

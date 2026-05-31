@@ -3,6 +3,7 @@ from __future__ import annotations
 from dataclasses import dataclass
 from datetime import datetime, timezone
 from decimal import Decimal
+from types import MappingProxyType
 from typing import Any
 
 from .database import DatabaseError
@@ -48,6 +49,9 @@ class IngestionPersistSummary:
     new_count: int
     seen_again_count: int
     likely_relevant_count: int
+    skipped_count: int = 0
+    source_counts: dict[str, int] | MappingProxyType[str, int] = MappingProxyType({})
+    warnings: tuple[str, ...] = ()
 
 
 @dataclass(frozen=True)

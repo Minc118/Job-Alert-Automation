@@ -11,6 +11,7 @@ import {
   runAuthenticatedGmailFetch,
   startAuthenticatedGmailConnect,
   uploadAuthenticatedDocument,
+  AuthenticatedApiError,
   type AuthenticatedDocument,
   type AuthenticatedDocumentPreview,
   type GmailConnectionStatus,
@@ -142,11 +143,16 @@ export default function AuthAccountSettingsPage({ onDashboardRefresh }: { onDash
       const summary = await withIdentityToken(runAuthenticatedGmailFetch);
       await loadGmailConnection();
       await onDashboardRefresh?.();
+      const warningText = summary.warnings.length ? ` ${summary.warnings.join(" ")}` : "";
       setGmailNotice(
-        `Fetch run ${summary.ingestionRunId} completed: ${summary.emailsFetched} email(s), ${summary.jobsParsed} parsed job(s), ${summary.newlyDiscovered} newly discovered.`,
+        `Fetch run ${summary.run_id} completed: ${summary.scanned_message_count} message(s), ${summary.parsed_job_count} parsed job(s), ${summary.new_job_count} newly discovered, ${summary.seen_before_count} seen before, ${summary.skipped_count} skipped.${warningText}`,
       );
-    } catch {
-      setGmailNotice("Gmail fetch could not be completed. Connect or reconnect Gmail, then try again.");
+    } catch (error) {
+      setGmailNotice(
+        error instanceof AuthenticatedApiError && error.detail
+          ? error.detail
+          : "Gmail fetch could not be completed. Connect or reconnect Gmail, then try again.",
+      );
     } finally {
       setGmailLoading(false);
     }

@@ -2,6 +2,16 @@ import type { GeminiAnalysisRunResult, IngestionRun, Job, OverviewData, User, Us
 
 const API_BASE_URL = (import.meta.env.VITE_API_BASE_URL || "http://localhost:8000").replace(/\/$/, "");
 
+export class AuthenticatedApiError extends Error {
+  constructor(
+    message: string,
+    readonly status: number,
+    readonly detail: string | null,
+  ) {
+    super(message);
+  }
+}
+
 export interface AuthenticatedApiUser {
   subject: string;
   displayName: string | null;
@@ -26,13 +36,14 @@ export interface GmailConnectionStatus {
 }
 
 export interface GmailFetchSummary {
-  ingestionRunId: number;
-  emailsFetched: number;
-  jobsParsed: number;
-  uniqueJobs: number;
-  newlyDiscovered: number;
-  seenAgain: number;
-  likelyRelevant: number;
+  run_id: number;
+  scanned_message_count: number;
+  parsed_job_count: number;
+  new_job_count: number;
+  seen_before_count: number;
+  skipped_count: number;
+  source_counts: Record<string, number>;
+  warnings: string[];
 }
 
 export interface AuthenticatedDocument {
@@ -64,7 +75,14 @@ async function authenticatedJson<T>(path: string, identityToken: string, init?: 
   });
 
   if (!response.ok) {
-    throw new Error(`API request failed with status ${response.status}`);
+    let detail: string | null = null;
+    try {
+      const errorBody = (await response.json()) as { detail?: unknown };
+      detail = typeof errorBody.detail === "string" ? errorBody.detail : null;
+    } catch {
+      detail = null;
+    }
+    throw new AuthenticatedApiError(`API request failed with status ${response.status}`, response.status, detail);
   }
 
   return response.json() as Promise<T>;

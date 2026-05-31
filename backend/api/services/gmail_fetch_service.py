@@ -19,6 +19,7 @@ SAFE_GMAIL_NOT_CONNECTED_ERROR = "Connect Gmail before fetching job alerts."
 SAFE_GMAIL_RECONNECT_ERROR = "Gmail authorization needs to be reconnected before fetching job alerts."
 SAFE_GMAIL_FETCH_ERROR = "Gmail fetch failed. Reconnect Gmail or try again later."
 SAFE_GMAIL_QUERY_ERROR = "Gmail source queries are not configured for job alert fetching."
+SAFE_GMAIL_EMPTY_RESULT_WARNING = "No job alert emails were found for the configured sources."
 
 
 def _connection_credentials(user_id: str) -> str:
@@ -34,6 +35,10 @@ def _connection_credentials(user_id: str) -> str:
     if row is None:
         raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail=SAFE_GMAIL_NOT_CONNECTED_ERROR)
     return decrypt_credentials(str(row[0]))
+
+
+def _source_counts_for_response(source_queries: dict[str, str], source_counts: dict[str, int]) -> dict[str, int]:
+    return {source: int(source_counts.get(source, 0)) for source in source_queries}
 
 
 def _mark_connection_status(
@@ -158,12 +163,16 @@ def run_connected_gmail_fetch(user_id: str, *, max_results_per_source: int = 10)
         raise HTTPException(status_code=status.HTTP_503_SERVICE_UNAVAILABLE, detail=SAFE_GMAIL_FETCH_ERROR) from exc
 
     _mark_connection_status(user_id, status_value="connected", fetched=True)
+    warnings = list(summary.warnings)
+    if summary.fetched_count == 0:
+        warnings.append(SAFE_GMAIL_EMPTY_RESULT_WARNING)
     return GmailFetchResponse(
-        ingestionRunId=summary.ingestion_run_id,
-        emailsFetched=summary.fetched_count,
-        jobsParsed=summary.parsed_count,
-        uniqueJobs=summary.unique_count,
-        newlyDiscovered=summary.new_count,
-        seenAgain=summary.seen_again_count,
-        likelyRelevant=summary.likely_relevant_count,
+        run_id=summary.ingestion_run_id,
+        scanned_message_count=summary.fetched_count,
+        parsed_job_count=summary.parsed_count,
+        new_job_count=summary.new_count,
+        seen_before_count=summary.seen_again_count,
+        skipped_count=summary.skipped_count,
+        source_counts=_source_counts_for_response(source_queries, dict(summary.source_counts)),
+        warnings=warnings,
     )
