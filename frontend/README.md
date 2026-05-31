@@ -120,7 +120,7 @@ Neon Auth with AUTH3 remains staged but account-scoped:
 - GMAIL-MU2 lets authenticated Settings run a manual Gmail fetch and refresh dashboard data through FastAPI.
 - AI1/AI2 let authenticated Jobs selections call backend-only Gemini analysis and refresh stored results through FastAPI.
 - DOC2 lets authenticated Settings upload, activate, preview Markdown, and delete private profile/resume documents through FastAPI metadata endpoints.
-- Existing fixed `user_id` development paths remain for local compatibility, but the Neon-authenticated `/app/*` view does not expose the Minjian/Chang switcher.
+- Existing fixed `user_id` development paths remain for local compatibility, but the public demo and Neon-authenticated `/app/*` views do not expose real personal identity switchers.
 
 ## Public Flow Direction
 
