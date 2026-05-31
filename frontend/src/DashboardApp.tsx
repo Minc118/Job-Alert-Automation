@@ -56,13 +56,15 @@ export default function DashboardApp({ mode }: { mode: "app" | "demo" }) {
   const needsAuthScopedBackend = mode === "app" && auth.mode === "neon";
   const basePath = mode === "demo" ? "/demo" : "/app";
   const modeLabel = mode === "demo" ? "demo mock" : apiMode;
-  const [selectedUserId, setSelectedUserId] = useState<UserId>("minjian");
+  const [selectedUserId, setSelectedUserId] = useState<UserId>(fallbackUsers[0]?.id ?? "demo-alex");
   const [appUsers, setAppUsers] = useState<User[]>(fallbackUsers);
   const [jobs, setJobs] = useState<Job[]>(initialJobs);
   const [runs, setRuns] = useState<IngestionRun[]>(ingestionRuns);
   const [overview, setOverview] = useState<OverviewData | null>(null);
   const [userPreference, setUserPreference] = useState<UserPreferences>(preferences[0]);
-  const [userDocuments, setUserDocuments] = useState<UserDocument[]>(initialDocuments.filter((document) => document.userId === "minjian"));
+  const [userDocuments, setUserDocuments] = useState<UserDocument[]>(
+    initialDocuments.filter((document) => document.userId === (fallbackUsers[0]?.id ?? "demo-alex")),
+  );
   const [sourceStatuses, setSourceStatuses] = useState<DataSourceStatus[]>(initialDataSources);
   const [loading, setLoading] = useState(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);

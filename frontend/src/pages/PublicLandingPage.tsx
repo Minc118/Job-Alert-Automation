@@ -160,7 +160,7 @@ export default function PublicLandingPage() {
                   <h3 className="mb-xs font-headline-sm text-headline-sm text-primary md:pr-36">Werkstudent KI &amp; Automatisierung</h3>
                   <div className="mb-md flex flex-wrap items-center gap-sm font-body-md text-body-md text-on-surface-variant">
                     <span className="material-symbols-outlined text-[18px]">domain</span>
-                    Siemens Energy
+                    Northstar Grid Labs
                     <span className="text-outline-variant">•</span>
                     <span className="material-symbols-outlined text-[18px]">location_on</span>
                     Berlin / Hybrid
@@ -182,7 +182,7 @@ export default function PublicLandingPage() {
                 </article>
                 <article className="rounded-lg border border-outline-variant/30 bg-surface-container-lowest p-lg opacity-75">
                   <h3 className="mb-xs font-headline-sm text-headline-sm text-primary">Working Student Data &amp; Automation</h3>
-                  <p className="font-body-md text-body-md text-on-surface-variant">SAP • Remote • StepStone</p>
+                  <p className="font-body-md text-body-md text-on-surface-variant">CloudHarbor Analytics • Remote • StepStone</p>
                 </article>
               </div>
             </div>
