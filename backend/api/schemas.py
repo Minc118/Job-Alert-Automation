@@ -73,13 +73,14 @@ class GmailConnectResponse(ApiModel):
 
 
 class GmailFetchResponse(ApiModel):
-    ingestionRunId: int
-    emailsFetched: int
-    jobsParsed: int
-    uniqueJobs: int
-    newlyDiscovered: int
-    seenAgain: int
-    likelyRelevant: int
+    run_id: int
+    scanned_message_count: int
+    parsed_job_count: int
+    new_job_count: int
+    seen_before_count: int
+    skipped_count: int
+    source_counts: dict[str, int]
+    warnings: list[str]
 
 
 class UserDocumentResponse(ApiModel):

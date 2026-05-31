@@ -52,6 +52,15 @@ def test_me_endpoint_requires_authentication() -> None:
     assert response.json()["detail"] == "Authentication required."
 
 
+def test_gmail_fetch_requires_authentication() -> None:
+    client = TestClient(create_app())
+
+    response = client.post("/api/gmail/fetch")
+
+    assert response.status_code == 401
+    assert response.json()["detail"] == "Authentication required."
+
+
 def test_me_endpoint_returns_verified_identity(monkeypatch) -> None:
     import api.routes.me as me_route
 
@@ -304,13 +313,14 @@ def test_gmail_fetch_uses_verified_identity(monkeypatch) -> None:
         "run_connected_gmail_fetch",
         lambda user_id, *, max_results_per_source: calls.append((user_id, max_results_per_source))
         or GmailFetchResponse(
-            ingestionRunId=12,
-            emailsFetched=3,
-            jobsParsed=4,
-            uniqueJobs=4,
-            newlyDiscovered=2,
-            seenAgain=2,
-            likelyRelevant=3,
+            run_id=12,
+            scanned_message_count=3,
+            parsed_job_count=4,
+            new_job_count=2,
+            seen_before_count=2,
+            skipped_count=0,
+            source_counts={"LinkedIn": 3},
+            warnings=[],
         ),
     )
     app = create_app()
@@ -324,8 +334,8 @@ def test_gmail_fetch_uses_verified_identity(monkeypatch) -> None:
     response = client.post("/api/gmail/fetch?max_results_per_source=7")
 
     assert response.status_code == 200
-    assert response.json()["ingestionRunId"] == 12
-    assert response.json()["newlyDiscovered"] == 2
+    assert response.json()["run_id"] == 12
+    assert response.json()["new_job_count"] == 2
     assert calls == [("auth_profile_123", 7)]
 
 
