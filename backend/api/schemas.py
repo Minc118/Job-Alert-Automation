@@ -210,12 +210,20 @@ class AnalysisRunCreate(ApiModel):
     jobIds: list[int]
 
 
+class AnalysisRunResultSummary(ApiModel):
+    job_id: int
+    score: float | None = None
+    priority: str
+    suggested_status: str | None = None
+
+
 class AnalysisRunResponse(ApiModel):
-    analysisBatchId: int
-    userId: str
+    analysis_batch_id: int
     provider: str
     model: str
-    requestedCount: int
-    analyzedCount: int
-    skippedCount: int
-    message: str
+    requested_job_count: int
+    analyzed_count: int
+    skipped_count: int
+    failed_count: int
+    results: list[AnalysisRunResultSummary]
+    warnings: list[str]

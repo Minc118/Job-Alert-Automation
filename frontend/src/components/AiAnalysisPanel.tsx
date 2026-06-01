@@ -1,4 +1,4 @@
-import type { CodexJobAnalysis } from "../types";
+import type { JobAnalysis } from "../types";
 
 function scoreColor(priority: string) {
   if (priority === "High") return "bg-[#10b981]";
@@ -7,7 +7,7 @@ function scoreColor(priority: string) {
   return "bg-outline";
 }
 
-export default function CodexAnalysisPanel({ analysis }: { analysis?: CodexJobAnalysis }) {
+export default function AiAnalysisPanel({ analysis }: { analysis?: JobAnalysis }) {
   const priority = analysis?.priority ?? "Not analyzed";
   const score = analysis?.score == null ? null : Math.round(analysis.score * 10);
 
@@ -15,7 +15,7 @@ export default function CodexAnalysisPanel({ analysis }: { analysis?: CodexJobAn
     <section className="overflow-hidden rounded-xl border border-surface-variant bg-surface-bright shadow-[0_2px_8px_rgba(0,0,0,0.02)]">
       <div className="flex items-center gap-2 border-b border-surface-variant bg-surface-container-low p-3">
         <span className="material-symbols-outlined text-[18px] text-primary">psychology</span>
-        <h4 className="font-label-sm text-label-sm font-bold uppercase tracking-wider text-primary">Codex Analysis</h4>
+        <h4 className="font-label-sm text-label-sm font-bold uppercase tracking-wider text-primary">AI Analysis</h4>
       </div>
       <div className="flex flex-col gap-4 p-4">
         <div className="flex items-center justify-between">
@@ -33,7 +33,7 @@ export default function CodexAnalysisPanel({ analysis }: { analysis?: CodexJobAn
         <div>
           <h5 className="mb-1 text-[11px] font-bold uppercase text-on-surface-variant">Reasoning</h5>
           <p className="rounded-lg border border-surface-variant bg-surface-container-low p-3 font-body-md text-body-md leading-relaxed text-primary">
-            {analysis?.reason ?? "No Codex analysis has been imported for this job yet."}
+            {analysis?.reason ?? "No AI analysis has been imported for this job yet."}
           </p>
         </div>
         <div>

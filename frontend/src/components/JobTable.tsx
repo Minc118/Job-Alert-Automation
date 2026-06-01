@@ -45,7 +45,7 @@ export default function JobTable({
             <th className="p-3 font-label-sm text-label-sm uppercase tracking-wider text-on-surface-variant">Discovery</th>
             <th className="p-3 font-label-sm text-label-sm uppercase tracking-wider text-on-surface-variant">Title & Company</th>
             <th className="p-3 font-label-sm text-label-sm uppercase tracking-wider text-on-surface-variant">Location</th>
-            <th className="p-3 font-label-sm text-label-sm uppercase tracking-wider text-on-surface-variant">Codex</th>
+            <th className="p-3 font-label-sm text-label-sm uppercase tracking-wider text-on-surface-variant">AI</th>
             <th className="p-3 font-label-sm text-label-sm uppercase tracking-wider text-on-surface-variant">Status</th>
             <th className="p-3 text-right font-label-sm text-label-sm uppercase tracking-wider text-on-surface-variant">Actions</th>
           </tr>

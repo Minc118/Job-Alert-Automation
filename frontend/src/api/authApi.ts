@@ -1,4 +1,4 @@
-import type { GeminiAnalysisRunResult, IngestionRun, Job, OverviewData, User, UserPreferences } from "../types";
+import type { AiAnalysisRunResult, IngestionRun, Job, OverviewData, User, UserPreferences } from "../types";
 
 const API_BASE_URL = (import.meta.env.VITE_API_BASE_URL || "http://localhost:8000").replace(/\/$/, "");
 
@@ -159,7 +159,7 @@ export function runAuthenticatedGmailFetch(identityToken: string): Promise<Gmail
   });
 }
 
-export function runAuthenticatedGeminiAnalysis(identityToken: string, jobIds: number[]): Promise<GeminiAnalysisRunResult> {
+export function runAuthenticatedAiAnalysis(identityToken: string, jobIds: number[]): Promise<AiAnalysisRunResult> {
   return authenticatedJson("/analysis/run", identityToken, {
     method: "POST",
     headers: { "Content-Type": "application/json" },

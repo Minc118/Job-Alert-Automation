@@ -47,7 +47,7 @@ def create_analysis_request(payload: AnalysisRequestCreate) -> AnalysisRequestRe
         jobCount=record.job_count,
         requestMarkdownPath=record.request_markdown_path,
         requestJsonPath=record.request_json_path,
-        message="Analysis request prepared. Open the Markdown file in Codex manually.",
+        message="Analysis request prepared. Use the Markdown file with the manual analysis fallback.",
     )
 
 

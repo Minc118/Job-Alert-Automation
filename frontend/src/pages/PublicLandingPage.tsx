@@ -14,7 +14,7 @@ const howItWorks = [
   },
   {
     icon: "psychology",
-    title: "Analyze jobs with Gemini",
+    title: "Analyze jobs with AI",
     description: "Future backend analysis uses compact job data and an active profile summary.",
   },
   {
@@ -31,15 +31,15 @@ const privacyNotes = [
   },
   {
     title: "Browser secrets stay out",
-    description: "The frontend never receives GEMINI_API_KEY or DATABASE_URL and never connects directly to Neon.",
+    description: "The frontend never receives AI API keys or database credentials and never connects directly to Neon.",
   },
   {
     title: "Compact analysis context",
-    description: "Profile summaries support matching. Raw Gmail bodies are not sent to Gemini for analysis.",
+    description: "Profile summaries support matching. Raw Gmail bodies are not sent for AI analysis.",
   },
   {
     title: "Resume handling",
-    description: "Resume PDFs are managed separately and are not sent to Gemini by default.",
+    description: "Resume PDFs are managed separately and are not sent for AI analysis by default.",
   },
 ];
 
@@ -133,7 +133,7 @@ export default function PublicLandingPage() {
                   ["New Jobs", "12", "work"],
                   ["Newly Discovered", "8", "new_releases"],
                   ["Likely Relevant", "5", "filter_alt"],
-                  ["Gemini High Priority", "3", "psychology"],
+                  ["AI High Priority", "3", "psychology"],
                   ["Saved", "4", "bookmark"],
                   ["Applied", "2", "task_alt"],
                 ].map(([label, value, icon], index) => (

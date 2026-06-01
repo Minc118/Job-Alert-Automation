@@ -1,5 +1,5 @@
 import type { Job, JobStatus } from "../types";
-import CodexAnalysisPanel from "./CodexAnalysisPanel";
+import AiAnalysisPanel from "./AiAnalysisPanel";
 import DiscoveryBadge, { getDiscoveryLabel } from "./DiscoveryBadge";
 import GPTApplicationPromptBox from "./GPTApplicationPromptBox";
 
@@ -77,7 +77,7 @@ export default function JobDetailDrawer({
             </div>
           </div>
 
-          <CodexAnalysisPanel analysis={job.codexAnalysis} />
+          <AiAnalysisPanel analysis={job.codexAnalysis} />
           <GPTApplicationPromptBox prompt={job.gptPrompt} />
 
           <div className="rounded-lg border border-surface-variant bg-surface-container-low p-3 font-body-md text-body-md text-on-surface-variant">
