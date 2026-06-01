@@ -119,7 +119,7 @@ function StepBody({
         </div>
         {[
           ["description", "Profile summary markdown", "Used as compact job matching context."],
-          ["picture_as_pdf", "Resume PDF", "Stored separately and not sent to Gemini by default."],
+          ["picture_as_pdf", "Resume PDF", "Stored separately and not sent for AI analysis by default."],
         ].map(([icon, title, description]) => (
           <section className="flex flex-col gap-md rounded-lg border border-surface-variant bg-surface-container-low p-md sm:flex-row sm:items-center sm:justify-between" key={title}>
             <div className="flex gap-sm">
@@ -143,7 +143,7 @@ function StepBody({
       <span className="material-symbols-outlined icon-fill flex h-20 w-20 items-center justify-center rounded-full bg-secondary-container text-[40px] text-on-secondary-container">task_alt</span>
       <h1 className="font-headline-md text-headline-md text-primary">Setup complete</h1>
       <p className="max-w-lg font-body-lg text-body-lg text-on-surface-variant">
-        The dashboard can now open with saved setup state. Gmail connection, profile upload, and Gemini analysis stay staged for later phases.
+        The dashboard can now open with saved setup state. Gmail connection, profile upload, and AI analysis stay staged for later phases.
       </p>
     </>
   );

@@ -24,7 +24,7 @@ export default function ImportAnalysisModal({
     <Modal onClose={onClose} title="Import Analysis Result">
       <div className="space-y-4 font-body-md text-body-md text-on-surface">
         <p>
-          Import a structured JSON result that Codex produced manually. The local API reads the file from
+          Import a structured JSON result produced by the manual analysis fallback. The local API reads the file from
           <span className="font-mono"> output/analysis_results</span> and writes the analysis rows to Neon.
         </p>
         <label className="block space-y-2">
@@ -46,7 +46,7 @@ export default function ImportAnalysisModal({
           Allow duplicate batch import with overwrite
         </label>
         <p className="text-on-surface-variant">
-          No browser-side Codex call is made. No OpenAI, Gemini, or AI API is called by this dashboard.
+          No browser-side AI provider call is made by this dashboard.
         </p>
         {error ? (
           <div className="rounded-lg border border-error-container bg-surface-container-lowest px-3 py-2 text-on-error-container">

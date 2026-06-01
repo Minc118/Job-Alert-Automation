@@ -7,7 +7,7 @@ const managedDocumentTypes = [
     title: "Profile Summary",
     accept: ".md,.markdown,text/markdown,text/plain",
     icon: "description",
-    note: "Active Markdown summary used for Gemini job matching.",
+    note: "Active Markdown summary used for AI job matching.",
   },
   {
     type: "resume_pdf" as const,
@@ -47,7 +47,7 @@ export default function AuthenticatedDocumentsSection({
     <SettingsSection className="lg:col-span-12" icon="folder_open" title="Profile & Resume">
       <div className="space-y-md">
         <p className="max-w-4xl font-body-md text-body-md text-on-surface-variant">
-          Files are uploaded to private backend storage. The browser receives safe metadata only; resume PDFs are not sent to Gemini by default.
+          Files are uploaded to private backend storage. The browser receives safe metadata only; resume PDFs are not sent for AI analysis by default.
         </p>
         {notice ? (
           <div className="rounded-lg border border-surface-variant bg-surface-container-low px-md py-sm font-body-md text-body-md text-on-surface-variant">

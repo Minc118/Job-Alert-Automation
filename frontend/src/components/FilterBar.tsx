@@ -45,7 +45,7 @@ export default function FilterBar({
         onChange={(event) => onChange({ ...filters, priority: event.target.value as JobFilters["priority"] })}
         value={filters.priority}
       >
-        <option value="all">Codex Priority: All</option>
+        <option value="all">AI Priority: All</option>
         <option value="High">High</option>
         <option value="Medium">Medium</option>
         <option value="Low">Low</option>

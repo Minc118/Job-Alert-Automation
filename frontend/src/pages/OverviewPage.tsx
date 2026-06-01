@@ -64,7 +64,7 @@ export default function OverviewPage({
         <MetricCard label="New Jobs" value={metrics.newJobs} />
         <MetricCard accent label="Newly Discovered" value={metrics.newlyDiscovered} />
         <MetricCard label="Likely Relevant" value={metrics.likelyRelevant} />
-        <MetricCard highlight label="Codex High Priority" value={metrics.highPriority} />
+        <MetricCard highlight label="AI High Priority" value={metrics.highPriority} />
         <MetricCard label="Saved" value={metrics.saved} />
         <MetricCard label="Applied" value={metrics.applied} />
         <MetricCard label="Ignored" muted value={metrics.ignored} />
@@ -93,7 +93,7 @@ export default function OverviewPage({
                 <RunStat label="Duplicates" value={displayedRun?.duplicatesSkipped ?? 0} />
               </div>
               <div className="mt-4 flex items-center justify-between rounded-lg bg-surface-container p-3">
-                <span className="font-body-md text-body-md text-on-surface">Codex Analyzed</span>
+                <span className="font-body-md text-body-md text-on-surface">AI Analyzed</span>
                 <span className="font-headline-sm text-headline-sm text-primary">{displayedRun?.codexAnalyzed ?? 0}</span>
               </div>
             </div>

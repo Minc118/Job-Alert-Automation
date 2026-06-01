@@ -34,7 +34,7 @@ def get_overview(user_id: str, *, range_name: str = "latest_run", validate_confi
     if latest_run:
         recent_activity.append({"label": "Latest job fetch completed", "time": latest_run.completedAt})
     if top_jobs:
-        recent_activity.append({"label": "Latest Codex analysis available", "time": top_jobs[0].codexAnalysis.analyzedAt or ""})
+        recent_activity.append({"label": "Latest AI analysis available", "time": top_jobs[0].codexAnalysis.analyzedAt or ""})
 
     return OverviewResponse(
         userId=user_id,

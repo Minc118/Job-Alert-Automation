@@ -37,7 +37,7 @@ For local Neon Auth and Gmail OAuth together, keep the post-Gmail frontend redir
 
 GMAIL-MU2 adds an authenticated manual fetch endpoint at `POST /api/gmail/fetch`. It reuses the existing parser, dedupe, relevance filter, and ingestion batch persistence path; it does not add scheduling.
 
-AI1 adds a backend-only Gemini analysis endpoint at `POST /api/analysis/run`. It requires the Neon Auth Bearer identity, validates selected job ownership, sends compact preference and job fields only, validates structured JSON, and stores provider-tagged analysis rows. Keep `GEMINI_API_KEY` in the repository root `.env`; it is never sent to frontend code.
+AI1 adds a backend-only Gemini analysis endpoint at `POST /api/analysis/run`. It requires the Neon Auth Bearer identity, validates selected job ownership, sends compact preference and job fields only, validates structured JSON, and stores provider-tagged analysis rows. Configure `AI_PROVIDER`, `GEMINI_API_KEY`, `GEMINI_MODEL`, and `AI_ANALYSIS_MAX_JOBS` in the repository root `.env`; these are never sent to frontend code.
 
 DOC2 adds auth-scoped private document endpoints under `/api/user/documents`. Profile summaries and cover letter templates accept UTF-8 Markdown, resume uploads accept PDF, and the API returns metadata plus Markdown preview text only. Private stored paths and resume PDF bytes are not browser responses.
 

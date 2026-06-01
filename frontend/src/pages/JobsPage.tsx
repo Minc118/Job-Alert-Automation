@@ -4,7 +4,7 @@ import ImportAnalysisModal from "../components/ImportAnalysisModal";
 import JobDetailDrawer from "../components/JobDetailDrawer";
 import JobTable from "../components/JobTable";
 import PrepareAnalysisModal from "../components/PrepareAnalysisModal";
-import type { AnalysisImportResult, AnalysisRequestResult, GeminiAnalysisRunResult, Job, JobStatus, User } from "../types";
+import type { AiAnalysisRunResult, AnalysisImportResult, AnalysisRequestResult, Job, JobStatus, User } from "../types";
 import { getStatusLabel } from "../components/StatusBadge";
 
 const tabs: Array<{ value: JobFilters["status"]; label: string }> = [
@@ -22,10 +22,10 @@ export default function JobsPage({
   onImportAnalysis,
   onPrepareAnalysis,
   onRefreshData,
-  onRunGeminiAnalysis,
+  onRunAiAnalysis,
   onStatusChange,
   manualAnalysisEnabled = true,
-  geminiAnalysisEnabled = false,
+  aiAnalysisEnabled = false,
 }: {
   user: User;
   jobs: Job[];
@@ -33,10 +33,10 @@ export default function JobsPage({
   onImportAnalysis: (resultPath: string, overwrite: boolean) => Promise<AnalysisImportResult>;
   onPrepareAnalysis: () => Promise<AnalysisRequestResult>;
   onRefreshData: () => void | Promise<void>;
-  onRunGeminiAnalysis?: (jobIds: number[]) => Promise<GeminiAnalysisRunResult>;
+  onRunAiAnalysis?: (jobIds: number[]) => Promise<AiAnalysisRunResult>;
   onStatusChange: (jobId: number, status: JobStatus) => void | Promise<void>;
   manualAnalysisEnabled?: boolean;
-  geminiAnalysisEnabled?: boolean;
+  aiAnalysisEnabled?: boolean;
 }) {
   const [selectedJobId, setSelectedJobId] = useState<number | null>(jobs[0]?.id ?? null);
   const [selectedJobDetail, setSelectedJobDetail] = useState<Job | null>(jobs[0] ?? null);
@@ -49,9 +49,9 @@ export default function JobsPage({
   const [importError, setImportError] = useState<string | null>(null);
   const [importResult, setImportResult] = useState<AnalysisImportResult | null>(null);
   const [selectedJobIds, setSelectedJobIds] = useState<number[]>([]);
-  const [geminiLoading, setGeminiLoading] = useState(false);
-  const [geminiError, setGeminiError] = useState<string | null>(null);
-  const [geminiResult, setGeminiResult] = useState<GeminiAnalysisRunResult | null>(null);
+  const [aiLoading, setAiLoading] = useState(false);
+  const [aiError, setAiError] = useState<string | null>(null);
+  const [aiResult, setAiResult] = useState<AiAnalysisRunResult | null>(null);
   const [filters, setFilters] = useState<JobFilters>({
     status: "all",
     source: "all",
@@ -129,19 +129,29 @@ export default function JobsPage({
     }
   }
 
-  async function runGeminiAnalysis() {
-    if (!onRunGeminiAnalysis || selectedJobIds.length === 0) {
-      setGeminiError("Select at least one job before running Gemini analysis.");
+  async function runAiAnalysis() {
+    setAiResult(null);
+    if (!onRunAiAnalysis) {
+      setAiError("AI analysis is not available in this mode.");
       return;
     }
-    setGeminiLoading(true);
-    setGeminiError(null);
+    if (selectedJobIds.length === 0) {
+      setAiError("Select at least one job before running AI analysis.");
+      return;
+    }
+    setAiLoading(true);
+    setAiError(null);
     try {
-      setGeminiResult(await onRunGeminiAnalysis(selectedJobIds));
-    } catch {
-      setGeminiError("Gemini analysis could not be completed. Check the backend API, Gemini configuration, and selected jobs.");
+      setAiResult(await onRunAiAnalysis(selectedJobIds));
+    } catch (error) {
+      const detail = typeof error === "object" && error !== null && "detail" in error ? error.detail : null;
+      const message =
+        typeof detail === "string" && detail
+          ? detail
+          : "AI analysis could not be completed. Check the backend API, AI configuration, and selected jobs.";
+      setAiError(message);
     } finally {
-      setGeminiLoading(false);
+      setAiLoading(false);
     }
   }
 
@@ -153,15 +163,15 @@ export default function JobsPage({
           <p className="mt-1 font-body-md text-body-md text-on-surface-variant">Reviewing potential roles for {user.displayName}.</p>
         </div>
         <div className="flex flex-wrap gap-2">
-          {geminiAnalysisEnabled ? (
+          {aiAnalysisEnabled ? (
             <button
               className="flex items-center gap-2 rounded-lg border border-outline-variant bg-surface-container-low px-4 py-2 font-label-md text-label-md text-primary transition-colors hover:bg-surface-container-high disabled:cursor-not-allowed disabled:opacity-60"
-              disabled={geminiLoading}
-              onClick={() => void runGeminiAnalysis()}
+              disabled={aiLoading}
+              onClick={() => void runAiAnalysis()}
               type="button"
             >
               <span className="material-symbols-outlined text-[18px]">psychology</span>
-              {geminiLoading ? "Running Gemini..." : `Run Gemini Analysis${selectedJobIds.length ? ` (${selectedJobIds.length})` : ""}`}
+              {aiLoading ? "Running AI..." : `Run AI Analysis${selectedJobIds.length ? ` (${selectedJobIds.length})` : ""}`}
             </button>
           ) : null}
           {manualAnalysisEnabled ? (
@@ -172,7 +182,7 @@ export default function JobsPage({
             type="button"
           >
             <span className="material-symbols-outlined text-[18px]">psychology</span>
-            Prepare Codex Analysis
+            Prepare AI Analysis
           </button>
           <button
             className="flex items-center gap-2 rounded-lg border border-outline-variant bg-surface-container-low px-4 py-2 font-label-md text-label-md text-primary transition-colors hover:bg-surface-container-high"
@@ -194,6 +204,28 @@ export default function JobsPage({
           </button>
         </div>
       </div>
+
+      {detailError || aiError || aiResult ? (
+        <div className="shrink-0 space-y-2" aria-live="polite">
+          {detailError ? (
+            <div className="rounded-lg border border-error-container bg-surface-container-lowest px-4 py-2 font-body-md text-body-md text-on-error-container">
+              {detailError}
+            </div>
+          ) : null}
+          {aiError ? (
+            <div className="rounded-lg border border-error-container bg-surface-container-lowest px-4 py-2 font-body-md text-body-md text-on-error-container">
+              {aiError}
+            </div>
+          ) : null}
+          {aiResult ? (
+            <div className="rounded-lg border border-secondary-container bg-surface-container-lowest px-4 py-2 font-body-md text-body-md text-on-secondary-container">
+              AI analysis stored for {aiResult.analyzed_count} job{aiResult.analyzed_count === 1 ? "" : "s"} in batch {aiResult.analysis_batch_id}.
+              {aiResult.failed_count ? ` ${aiResult.failed_count} job${aiResult.failed_count === 1 ? "" : "s"} could not be analyzed.` : ""}
+              {aiResult.warnings.length ? ` ${aiResult.warnings[0]}` : ""}
+            </div>
+          ) : null}
+        </div>
+      ) : null}
 
       <div className="relative flex flex-1 gap-lg overflow-hidden">
         <section className="flex flex-1 flex-col overflow-hidden rounded-xl border border-surface-variant bg-surface-container-lowest shadow-sm">
@@ -228,21 +260,6 @@ export default function JobsPage({
         </section>
         <JobDetailDrawer job={selectedJob} onClose={() => setSelectedJobId(null)} onStatusChange={changeStatus} />
       </div>
-      {detailError ? (
-        <div className="rounded-lg border border-error-container bg-surface-container-lowest px-4 py-2 font-body-md text-body-md text-on-error-container">
-          {detailError}
-        </div>
-      ) : null}
-      {geminiError ? (
-        <div className="rounded-lg border border-error-container bg-surface-container-lowest px-4 py-2 font-body-md text-body-md text-on-error-container">
-          {geminiError}
-        </div>
-      ) : null}
-      {geminiResult ? (
-        <div className="rounded-lg border border-secondary-container bg-surface-container-lowest px-4 py-2 font-body-md text-body-md text-on-secondary-container">
-          Gemini analysis stored for {geminiResult.analyzedCount} job{geminiResult.analyzedCount === 1 ? "" : "s"} in batch {geminiResult.analysisBatchId}.
-        </div>
-      ) : null}
       {selectedJob ? (
         <section className="rounded-xl border border-surface-variant bg-surface-container-lowest p-4 shadow-sm lg:hidden">
           <div className="mb-2 font-label-sm text-label-sm uppercase tracking-wider text-on-surface-variant">Selected Job</div>

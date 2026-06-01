@@ -353,14 +353,15 @@ def test_gemini_analysis_run_uses_verified_identity(monkeypatch) -> None:
         "run_gemini_analysis",
         lambda user_id, payload: calls.append((user_id, payload.jobIds))
         or AnalysisRunResponse(
-            analysisBatchId=27,
-            userId=user_id,
+            analysis_batch_id=27,
             provider="gemini",
             model="gemini-2.5-flash",
-            requestedCount=2,
-            analyzedCount=2,
-            skippedCount=0,
-            message="done",
+            requested_job_count=2,
+            analyzed_count=2,
+            skipped_count=0,
+            failed_count=0,
+            results=[],
+            warnings=[],
         ),
     )
     app = create_app()
@@ -375,7 +376,16 @@ def test_gemini_analysis_run_uses_verified_identity(monkeypatch) -> None:
 
     assert response.status_code == 200
     assert response.json()["provider"] == "gemini"
+    assert response.json()["analysis_batch_id"] == 27
     assert calls == [("auth_profile_123", [41, 42])]
+
+
+def test_gemini_analysis_run_requires_authentication() -> None:
+    client = TestClient(create_app())
+
+    response = client.post("/api/analysis/run", json={"jobIds": [41]})
+
+    assert response.status_code == 401
 
 
 def test_documents_endpoint_uses_verified_identity(monkeypatch) -> None:

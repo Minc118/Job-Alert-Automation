@@ -9,7 +9,7 @@ import {
   getAuthenticatedOverview,
   getAuthenticatedRuns,
   getMe,
-  runAuthenticatedGeminiAnalysis,
+  runAuthenticatedAiAnalysis,
   updateAuthenticatedJobStatus,
 } from "./api/authApi";
 import { mockClient } from "./api/mockClient";
@@ -223,9 +223,12 @@ export default function DashboardApp({ mode }: { mode: "app" | "demo" }) {
     }
   }
 
-  function loadJobDetail(jobId: number): Promise<Job> {
-    if (needsAuthScopedBackend && identityToken) {
-      return getAuthenticatedJob(identityToken, jobId);
+  async function loadJobDetail(jobId: number): Promise<Job> {
+    if (needsAuthScopedBackend) {
+      const token = identityToken ?? (await auth.getIdentityToken());
+      if (!token) throw new Error("Missing identity token.");
+      setIdentityToken(token);
+      return getAuthenticatedJob(token, jobId);
     }
     return dashboardClient.getJob(selectedUserId, jobId);
   }
@@ -240,10 +243,10 @@ export default function DashboardApp({ mode }: { mode: "app" | "demo" }) {
     return result;
   }
 
-  async function runGeminiAnalysis(jobIds: number[]) {
+  async function runAiAnalysis(jobIds: number[]) {
     const token = identityToken ?? (await auth.getIdentityToken());
     if (!token) throw new Error("Missing identity token.");
-    const result = await runAuthenticatedGeminiAnalysis(token, jobIds);
+    const result = await runAuthenticatedAiAnalysis(token, jobIds);
     setIdentityToken(token);
     await refreshSelectedUserData();
     return result;
@@ -284,12 +287,12 @@ export default function DashboardApp({ mode }: { mode: "app" | "demo" }) {
               <JobsPage
                 jobs={userJobs}
                 loadJobDetail={loadJobDetail}
-                geminiAnalysisEnabled
+                aiAnalysisEnabled
                 manualAnalysisEnabled={false}
                 onImportAnalysis={importAnalysisResult}
                 onPrepareAnalysis={prepareAnalysisRequest}
                 onRefreshData={refreshSelectedUserData}
-                onRunGeminiAnalysis={runGeminiAnalysis}
+                onRunAiAnalysis={runAiAnalysis}
                 onStatusChange={updateStatus}
                 user={selectedUser}
               />

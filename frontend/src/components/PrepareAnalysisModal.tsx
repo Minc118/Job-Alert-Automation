@@ -17,10 +17,10 @@ export default function PrepareAnalysisModal({
   user: User;
 }) {
   return (
-    <Modal onClose={onClose} title="Prepare Codex Analysis">
+    <Modal onClose={onClose} title="Prepare AI Analysis">
       <div className="space-y-4 font-body-md text-body-md text-on-surface">
         <p>
-          Prepare a local Markdown and JSON request for {user.displayName}. Open the Markdown file in Codex manually after it is generated.
+          Prepare a local Markdown and JSON request for {user.displayName}. Use it with the manual analysis fallback after it is generated.
         </p>
         {result ? (
           <div className="space-y-2 rounded-lg bg-surface-container-low p-3 font-mono text-[12px] text-on-surface-variant">
@@ -35,7 +35,7 @@ export default function PrepareAnalysisModal({
           </div>
         )}
         {error ? <p className="rounded-lg border border-error-container p-3 text-on-error-container">{error}</p> : null}
-        <p className="text-on-surface-variant">No browser-side Codex or AI API call is made.</p>
+        <p className="text-on-surface-variant">No browser-side AI provider call is made.</p>
         <div className="flex gap-2">
           <button
             className="rounded-lg bg-primary-container px-4 py-2 font-label-md text-label-md text-on-primary disabled:opacity-60"

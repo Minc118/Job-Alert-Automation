@@ -9,7 +9,7 @@ export interface User {
   displayName: string;
 }
 
-export interface CodexJobAnalysis {
+export interface JobAnalysis {
   score: number | null;
   priority: Priority;
   reason: string;
@@ -37,7 +37,7 @@ export interface Job {
   firstSeenAt: string;
   lastSeenAt: string;
   lastSeenRunId?: number;
-  codexAnalysis?: CodexJobAnalysis;
+  codexAnalysis?: JobAnalysis;
   gptPrompt: string;
 }
 
@@ -115,15 +115,21 @@ export interface AnalysisImportResult {
   message: string;
 }
 
-export interface GeminiAnalysisRunResult {
-  analysisBatchId: number;
-  userId: UserId;
-  provider: "gemini" | string;
+export interface AiAnalysisRunResult {
+  analysis_batch_id: number;
+  provider: string;
   model: string;
-  requestedCount: number;
-  analyzedCount: number;
-  skippedCount: number;
-  message: string;
+  requested_job_count: number;
+  analyzed_count: number;
+  skipped_count: number;
+  failed_count: number;
+  results: Array<{
+    job_id: number;
+    score: number | null;
+    priority: Priority;
+    suggested_status: JobStatus | null;
+  }>;
+  warnings: string[];
 }
 
 export type Page = "overview" | "jobs" | "settings";

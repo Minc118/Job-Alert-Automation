@@ -7,7 +7,7 @@ from typing import Any, Literal
 from fastapi import HTTPException, status
 from pydantic import BaseModel, ValidationError, field_validator
 
-from api.schemas import AnalysisRunCreate, AnalysisRunResponse
+from api.schemas import AnalysisRunCreate, AnalysisRunResponse, AnalysisRunResultSummary
 from api.services.database import readonly_connection, write_connection
 from api.services.document_service import load_active_profile_summary
 from api.services.preference_service import get_preferences
@@ -20,10 +20,10 @@ from job_alert_automation.repository import (
 )
 
 
-SAFE_GEMINI_CONFIG_ERROR = "Gemini analysis is not configured. Add backend Gemini settings to the local .env file."
-SAFE_GEMINI_UNAVAILABLE_ERROR = "Gemini analysis failed. Check backend configuration and try again later."
-SAFE_GEMINI_RESULT_ERROR = "Gemini returned an analysis result that could not be validated."
-VALID_SUGGESTED_STATUSES = {"new", "saved", "applied", "ignored"}
+SAFE_GEMINI_CONFIG_ERROR = "AI analysis is not configured. Add backend AI settings to the local .env file."
+SAFE_GEMINI_UNAVAILABLE_ERROR = "AI analysis failed. Check backend configuration and try again later."
+SAFE_GEMINI_RESULT_ERROR = "The AI provider returned an analysis result that could not be validated."
+SAFE_GEMINI_PROFILE_ERROR = "Add an active profile summary before running AI analysis."
 
 
 @dataclass(frozen=True)
@@ -56,8 +56,11 @@ class GeminiJobResult(BaseModel):
         return value
 
 
-class GeminiResultEnvelope(BaseModel):
+@dataclass(frozen=True)
+class GeminiValidationResult:
     results: list[GeminiJobResult]
+    failed_count: int
+    warnings: list[str]
 
 
 def _analysis_limit() -> int:
@@ -93,7 +96,7 @@ def _unique_job_ids(payload: AnalysisRunCreate) -> list[int]:
     if len(unique_ids) > limit:
         raise HTTPException(
             status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
-            detail=f"Select at most {limit} jobs for one Gemini analysis run.",
+            detail=f"Select at most {limit} jobs for one AI analysis run.",
         )
     return unique_ids
 
@@ -161,16 +164,15 @@ def _load_owned_jobs(user_id: str, job_ids: list[int]) -> list[AnalysisJobInput]
 def _profile_context(user_id: str) -> dict[str, Any]:
     preferences = get_preferences(user_id)
     active_profile_summary = load_active_profile_summary(user_id)
+    if not active_profile_summary:
+        raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail=SAFE_GEMINI_PROFILE_ERROR)
     profile_context = {
         "target_role_keywords": preferences.targetRoleKeywords,
         "preferred_locations": preferences.preferredLocations,
         "excluded_keywords": preferences.excludedKeywords,
+        "profile_source": "active_profile_markdown",
+        "active_profile_summary": active_profile_summary,
     }
-    if active_profile_summary:
-        profile_context["profile_source"] = "active_profile_markdown"
-        profile_context["active_profile_summary"] = active_profile_summary
-        return profile_context
-    profile_context["profile_source"] = "auth_scoped_preferences"
     return profile_context
 
 
@@ -191,7 +193,6 @@ def build_gemini_prompt(user_id: str, jobs: list[AnalysisJobInput]) -> str:
         for job in jobs
     ]
     payload = {
-        "user_id": user_id,
         "profile": _profile_context(user_id),
         "jobs": compact_jobs,
     }
@@ -246,7 +247,8 @@ def _generate_gemini_json(*, api_key: str, model: str, prompt: str) -> str:
         raise HTTPException(status_code=status.HTTP_503_SERVICE_UNAVAILABLE, detail=SAFE_GEMINI_CONFIG_ERROR) from exc
 
     try:
-        response = genai.Client(api_key=api_key).models.generate_content(
+        client = genai.Client(api_key=api_key)
+        response = client.models.generate_content(
             model=model,
             contents=prompt,
             config=types.GenerateContentConfig(
@@ -257,22 +259,54 @@ def _generate_gemini_json(*, api_key: str, model: str, prompt: str) -> str:
     except Exception as exc:
         raise HTTPException(status_code=status.HTTP_503_SERVICE_UNAVAILABLE, detail=SAFE_GEMINI_UNAVAILABLE_ERROR) from exc
 
-    if not isinstance(response.text, str) or not response.text.strip():
-        raise HTTPException(status_code=status.HTTP_503_SERVICE_UNAVAILABLE, detail=SAFE_GEMINI_RESULT_ERROR)
-    return response.text
-
-
-def _validate_results(raw_json: str, *, expected_job_ids: list[int]) -> list[GeminiJobResult]:
     try:
-        envelope = GeminiResultEnvelope.model_validate_json(raw_json)
-    except ValidationError as exc:
+        response_text = response.text
+    except Exception as exc:
+        raise HTTPException(status_code=status.HTTP_503_SERVICE_UNAVAILABLE, detail=SAFE_GEMINI_RESULT_ERROR) from exc
+    if not isinstance(response_text, str) or not response_text.strip():
+        raise HTTPException(status_code=status.HTTP_503_SERVICE_UNAVAILABLE, detail=SAFE_GEMINI_RESULT_ERROR)
+    return response_text
+
+
+def _validate_results(raw_json: str, *, expected_job_ids: list[int]) -> GeminiValidationResult:
+    try:
+        parsed = json.loads(raw_json)
+        raw_results = parsed["results"]
+    except (json.JSONDecodeError, KeyError, TypeError) as exc:
         raise HTTPException(status_code=status.HTTP_502_BAD_GATEWAY, detail=SAFE_GEMINI_RESULT_ERROR) from exc
 
     expected = set(expected_job_ids)
-    received = [result.job_id for result in envelope.results]
-    if len(received) != len(set(received)) or set(received) != expected:
+    if not isinstance(raw_results, list):
         raise HTTPException(status_code=status.HTTP_502_BAD_GATEWAY, detail=SAFE_GEMINI_RESULT_ERROR)
-    return envelope.results
+
+    results: list[GeminiJobResult] = []
+    received: set[int] = set()
+    failed_job_ids: set[int] = set()
+    failed_count = 0
+    for raw_result in raw_results:
+        raw_job_id = raw_result.get("job_id") if isinstance(raw_result, dict) else None
+        try:
+            result = GeminiJobResult.model_validate(raw_result)
+        except ValidationError:
+            if isinstance(raw_job_id, int) and raw_job_id in expected and raw_job_id not in received:
+                failed_job_ids.add(raw_job_id)
+            failed_count += 1
+            continue
+        if result.job_id not in expected or result.job_id in received:
+            failed_count += 1
+            continue
+        results.append(result)
+        received.add(result.job_id)
+
+    missing_count = len(expected - received - failed_job_ids)
+    failed_count += missing_count
+    if not results:
+        raise HTTPException(status_code=status.HTTP_502_BAD_GATEWAY, detail=SAFE_GEMINI_RESULT_ERROR)
+
+    warnings: list[str] = []
+    if failed_count:
+        warnings.append("Some selected jobs were skipped because the AI provider returned incomplete or invalid per-job output.")
+    return GeminiValidationResult(results=results, failed_count=failed_count, warnings=warnings)
 
 
 def run_gemini_analysis(user_id: str, payload: AnalysisRunCreate) -> AnalysisRunResponse:
@@ -290,9 +324,9 @@ def run_gemini_analysis(user_id: str, payload: AnalysisRunCreate) -> AnalysisRun
             model=model,
             prompt=build_gemini_prompt(user_id, jobs),
         )
-        results = _validate_results(raw_json, expected_job_ids=job_ids)
+        validation = _validate_results(raw_json, expected_job_ids=job_ids)
         with write_connection() as conn:
-            for result in results:
+            for result in validation.results:
                 insert_analysis(
                     conn,
                     user_id=user_id,
@@ -315,12 +349,21 @@ def run_gemini_analysis(user_id: str, payload: AnalysisRunCreate) -> AnalysisRun
         raise
 
     return AnalysisRunResponse(
-        analysisBatchId=batch_id,
-        userId=user_id,
+        analysis_batch_id=batch_id,
         provider="gemini",
         model=model,
-        requestedCount=len(payload.jobIds),
-        analyzedCount=len(results),
-        skippedCount=len(payload.jobIds) - len(job_ids),
-        message="Gemini analysis completed. The dashboard can read the latest stored analysis.",
+        requested_job_count=len(payload.jobIds),
+        analyzed_count=len(validation.results),
+        skipped_count=len(payload.jobIds) - len(job_ids),
+        failed_count=validation.failed_count,
+        results=[
+            AnalysisRunResultSummary(
+                job_id=result.job_id,
+                score=result.score,
+                priority=result.priority,
+                suggested_status=result.suggested_status,
+            )
+            for result in validation.results
+        ],
+        warnings=validation.warnings,
     )

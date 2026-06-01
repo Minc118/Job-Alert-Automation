@@ -35,7 +35,7 @@ export default function TopRecommendedJobs({ jobs, onViewAll }: { jobs: Job[]; o
                 <p className="mt-1 font-body-md text-body-md text-on-surface">{job.company}</p>
               </div>
               <div className="flex shrink-0 items-center gap-1 rounded bg-surface-container-low px-2 py-1">
-                <span className="font-label-sm text-label-sm text-on-surface-variant">Codex Score</span>
+                <span className="font-label-sm text-label-sm text-on-surface-variant">AI Score</span>
                 <span className="font-headline-sm text-headline-sm text-primary">
                   {job.codexAnalysis?.score == null ? "--" : Math.round(job.codexAnalysis.score * 10)}
                 </span>
@@ -52,7 +52,7 @@ export default function TopRecommendedJobs({ jobs, onViewAll }: { jobs: Job[]; o
               </span>
             </div>
             <div className="mb-4 rounded-lg border border-surface-variant bg-surface p-3">
-              <span className="mb-1 block font-label-sm text-label-sm uppercase tracking-wide text-secondary">Codex Reasoning</span>
+              <span className="mb-1 block font-label-sm text-label-sm uppercase tracking-wide text-secondary">AI Reasoning</span>
               <p className="font-body-md text-body-md text-on-surface">{job.codexAnalysis?.reason ?? "Not analyzed yet."}</p>
             </div>
             <div className="flex items-center justify-between gap-3 pt-2">
